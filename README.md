@@ -4,6 +4,13 @@ Xbox 360 Call of Duty 4 modification
 
 iw3xenon is a plugin for Xbox 360 that extends the base game engine with various features.
 
+### Console Commands
+
+These commands were reintroduced after being removed in Title Update #4:
+
+-   `noclip` - toggle noclip
+-   `ufo` - toggle ufo
+
 ## GSC Extensions
 
 `<player> executeclientcommand(string <command>)`

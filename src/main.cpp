@@ -1,6 +1,9 @@
 #include <xtl.h>
 #include <string>
 #include <cstdint>
+#include <iostream>
+#include <cstddef>
+#include <cassert>
 
 // Get the address of a function from a module by its ordinal
 void *ResolveFunction(const std::string &moduleName, uint32_t ordinal)
@@ -251,27 +254,58 @@ Detour::Stub Detour::s_StubSection[MAX_HOOK_COUNT];
 size_t Detour::s_HookCount = 0;
 CRITICAL_SECTION Detour::s_CriticalSection = { 0 };
 
-struct client_t;
+struct gclient_s
+{
+    char _pad[0x30a8];
+    int noclip; // 0x30a8
+    int ufo;    // 0x30ac
+};
 
 struct gentity_s
 {
-    char _pad[0x0015c];
-    client_t *client; // 0x0015c
+    char _pad[0x015c];
+    gclient_s *client; // 0x015c
 };
+
+static_assert(offsetof(gentity_s, client) == 0x0015C, "client is not at the correct offset 0x0015C");
 
 typedef int scr_entref_t;
 typedef void (*xfunction_t)(scr_entref_t *);
+typedef int client_t;
+
+enum svscmd_type
+{
+    SV_CMD_CAN_IGNORE = 0x0,
+    SV_CMD_RELIABLE = 0x1,
+};
+
+struct cmd_function_s
+
+{
+    cmd_function_s *next;
+    const char *name;
+    const char *autoCompleteDir;
+    const char *autoCompleteExt;
+    void(__cdecl *function)();
+};
 
 gentity_s *(*GetEntity)(scr_entref_t *entref) = reinterpret_cast<gentity_s *(*)(scr_entref_t *)>(0x82257F30);
 void (*CG_GameMessage)(int localClientNum, const char *msg) = reinterpret_cast<void (*)(int localClientNum, const char *msg)>(0x8230AAF0);
 void (*SV_ExecuteClientCommand)(client_t *cl, const char *s, int clientOK) = reinterpret_cast<void (*)(client_t *cl, const char *s, int clientOK)>(0x82208088);
+void (*SV_GameSendServerCommand)(int clientNum, svscmd_type type, const char *text) = reinterpret_cast<void (*)(int clientNum, svscmd_type type, const char *text)>(0x82204BB8);
 void (*Cbuf_AddText)(int localClientNum, const char *text) = reinterpret_cast<void (*)(int localClientNum, const char *text)>(0x82239FD0);
 char *(*Scr_GetString)(unsigned int index) = reinterpret_cast<char *(*)(unsigned int index)>(0x82211390);
 void (*Scr_ObjectError)(const char *error) = reinterpret_cast<void (*)(const char *error)>(0x8220FDD0);
+// void (*ClientCommand)(int clientNum) = reinterpret_cast<void (*)(int clientNum)>(0x8227DCF0);
+void (*SV_Cmd_ArgvBuffer)(int arg, char *buffer, int bufferLength) = reinterpret_cast<void (*)(int arg, char *buffer, int bufferLength)>(0x82239F48);
+int (*I_strnicmp)(const char *s0, const char *s1, int n) = reinterpret_cast<int (*)(const char *s0, const char *s1, int n)>(0x821CDA98);
+
+cmd_function_s *cmd_functions = reinterpret_cast<cmd_function_s *>(0x82A2335C);
+gentity_s *g_entities = reinterpret_cast<gentity_s *>(0x8287CD08);
 
 void GScr_ExecuteClientCommand(scr_entref_t *entref)
 {
-    gentity_s *gent = GetEntity(0);
+    gentity_s *ent = GetEntity(0);
 
     // todo: find address for Scr_GetNumParam
     // if (Scr_GetNumParam() != 1)
@@ -286,8 +320,54 @@ void GScr_ExecuteClientCommand(scr_entref_t *entref)
 
     // TODO: this works but it needs special formatting for a client command?
     // SV_ExecuteClientCommand(reinterpret_cast<client_t*>(0xB112AD68), cmd, 1);
+    int clientNum = ent - g_entities;
+    Cbuf_AddText(clientNum, cmd);
+}
 
-    Cbuf_AddText(0, cmd);
+void Cmd_AddCommand(const char *name)
+{
+    cmd_function_s *cmd = new cmd_function_s;
+    cmd->name = name;
+    cmd->autoCompleteDir = nullptr;
+    cmd->autoCompleteExt = nullptr;
+    cmd->function = 0;   // Handled in ClientCommandHook since we need to pass gentity_s
+    cmd->next = nullptr; // Since it's the last item, next should be null
+
+    // Traverse the list to find the last element
+    cmd_function_s *current = cmd_functions;
+    while (current->next != nullptr)
+        current = current->next;
+
+    current->next = cmd;
+}
+
+void Cmd_Noclip_f(gentity_s *ent)
+{
+    int current = ent->client->noclip;
+    ent->client->noclip = current == 0;
+    int clientNum = ent - g_entities;
+    if (current)
+        SV_GameSendServerCommand(clientNum, SV_CMD_CAN_IGNORE, "e \"GAME_NOCLIPOFF\"");
+    else
+        SV_GameSendServerCommand(clientNum, SV_CMD_CAN_IGNORE, "e \"GAME_NOCLIPON\"");
+}
+
+void Cmd_UFO_f(gentity_s *ent)
+{
+    int current = ent->client->ufo;
+    ent->client->ufo = current == 0;
+    int clientNum = ent - g_entities;
+    if (current)
+        SV_GameSendServerCommand(clientNum, SV_CMD_CAN_IGNORE, "e \"GAME_UFOOFF\"");
+    else
+        SV_GameSendServerCommand(clientNum, SV_CMD_CAN_IGNORE, "e \"GAME_UFOON\"");
+}
+
+void GScr_testfunction(scr_entref_t *entref)
+{
+    // std::cout << "scr_entref_t address: " << entref << std::endl;
+    // gentity_s *gent = GetEntity(entref);
+    // printFunctionNames();
 }
 
 Detour *pScr_GetMethodDetour = nullptr;
@@ -302,18 +382,50 @@ xfunction_t Scr_GetMethodHook(const char **pName, int *type)
     if (std::strcmp(*pName, "executeclientcommand") == 0)
         return &GScr_ExecuteClientCommand;
 
+    if (std::strcmp(*pName, "testfunction") == 0)
+        return &GScr_testfunction;
+
     return ret;
+}
+
+Detour *pClientCommandDetour = nullptr;
+
+void ClientCommandHook(int clientNum)
+{
+    gentity_s *ent = &g_entities[clientNum];
+    // std::cout << "ClientCommandHook clientNum: " << clientNum << std::endl;
+    // std::cout << "ClientCommandHook ent: " << ent << std::endl;
+
+    char cmd[1032];
+    SV_Cmd_ArgvBuffer(0, cmd, 1024);
+
+    // std::cout << "ClientCommand: " << cmd << std::endl;
+
+    if (I_strnicmp(cmd, "noclip", 6) == 0)
+        Cmd_Noclip_f(ent);
+
+    else if (I_strnicmp(cmd, "ufo", 3) == 0)
+        Cmd_UFO_f(ent);
+
+    else
+        pClientCommandDetour->GetOriginal<decltype(&ClientCommandHook)>()(clientNum);
 }
 
 // Sets up the hook
 void InitIW3()
 {
     // Waiting a little bit for the game to be fully loaded in memory
-    Sleep(200);
+    Sleep(1000);
     XNotifyQueueUI(0, 0, XNOTIFY_SYSTEM, L"Call of Duty 4", nullptr);
 
     pScr_GetMethodDetour = new Detour(0x822570E0, Scr_GetMethodHook);
     pScr_GetMethodDetour->Install();
+
+    pClientCommandDetour = new Detour(0x8227DCF0, ClientCommandHook);
+    pClientCommandDetour->Install();
+
+    Cmd_AddCommand("noclip");
+    Cmd_AddCommand("ufo");
 }
 
 int DllMain(HANDLE hModule, DWORD reason, void *pReserved)
@@ -329,6 +441,9 @@ int DllMain(HANDLE hModule, DWORD reason, void *pReserved)
 
         if (pScr_GetMethodDetour)
             delete pScr_GetMethodDetour;
+
+        if (pClientCommandDetour)
+            delete pClientCommandDetour;
 
         // We give the system some time to clean up the thread before exiting
         Sleep(250);
