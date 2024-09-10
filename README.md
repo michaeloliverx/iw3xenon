@@ -19,6 +19,18 @@ Executes the given console command for the player.
 
 Usage example `self executeclientcommand("cg_fov 80")`
 
+`<player> jumpbuttonpressed()`
+
+Returns true if the jump button is pressed.
+
+`<player> leanleftbuttonpressed()`
+
+Returns true if the lean left button is pressed.
+
+`<player> leanrightbuttonpressed()`
+
+Returns true if the lean right button is pressed.
+
 ## Credits
 
 -   [ClementDreptin](https://github.com/ClementDreptin)

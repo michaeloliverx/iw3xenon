@@ -254,24 +254,218 @@ Detour::Stub Detour::s_StubSection[MAX_HOOK_COUNT];
 size_t Detour::s_HookCount = 0;
 CRITICAL_SECTION Detour::s_CriticalSection = { 0 };
 
-struct gclient_s
+#define KEY_MASK_FIRE 1
+#define KEY_MASK_SPRINT 2
+#define KEY_MASK_MELEE 4
+#define KEY_MASK_RELOAD 16
+#define KEY_MASK_LEANLEFT 64
+#define KEY_MASK_LEANRIGHT 128
+#define KEY_MASK_PRONE 256
+#define KEY_MASK_CROUCH 512
+#define KEY_MASK_JUMP 1024
+#define KEY_MASK_ADS_MODE 2048
+#define KEY_MASK_TEMP_ACTION 4096
+#define KEY_MASK_HOLDBREATH 8192
+#define KEY_MASK_FRAG 16384
+#define KEY_MASK_SMOKE 32768
+#define KEY_MASK_NIGHTVISION 262144
+#define KEY_MASK_ADS 524288
+#define KEY_MASK_USE 8
+#define KEY_MASK_USERELOAD 0x20
+
+/* 9096 */
+struct EntHandle
+
 {
-    char _pad[0x30a8];
+    unsigned __int16 number;
+    unsigned __int16 infoIndex;
+};
+
+/* 9097 */
+struct entityShared_t
+{
+    unsigned __int8 linked;
+    unsigned __int8 bmodel;
+    unsigned __int8 svFlags;
+    int clientMask[2];
+    unsigned __int8 inuse;
+    int broadcastTime;
+    float mins[3];
+    float maxs[3];
+    int contents;
+    float absmin[3];
+    float absmax[3];
+    float currentOrigin[3];
+    float currentAngles[3];
+    EntHandle ownerNum;
+    int eventTime;
+};
+
+static_assert(sizeof(entityShared_t) == 0x0068, "size of gentity_s is not 0x0068");
+
+struct gclient_s
+
+{
+    char _pad[0x30a4];
+    int spectatorClient;
     int noclip; // 0x30a8
     int ufo;    // 0x30ac
 };
 
+static_assert(offsetof(gclient_s, noclip) == 0x30a8, "");
+static_assert(offsetof(gclient_s, ufo) == 0x30ac, "");
+
 struct gentity_s
 {
-    char _pad[0x015c];
-    gclient_s *client; // 0x015c
+    // entityState_s s;
+    char _pad[0x00F4]; // 0x0000, 0x00F4
+    entityShared_t r;  // 0x00F4, 0x0068
+    gclient_s *client; // 0x015c, 0x0004
 };
 
 static_assert(offsetof(gentity_s, client) == 0x0015C, "client is not at the correct offset 0x0015C");
 
-typedef int scr_entref_t;
-typedef void (*xfunction_t)(scr_entref_t *);
-typedef int client_t;
+/* 8748 */
+struct __declspec(align(2)) usercmd_s
+{
+    int serverTime;
+    int buttons;
+    int angles[3];
+    unsigned __int8 weapon;
+    unsigned __int8 offHandIndex;
+    char forwardmove;
+    char rightmove;
+    float meleeChargeYaw;
+    unsigned __int8 meleeChargeDist;
+    char selectedLocation[2];
+};
+
+static_assert(sizeof(usercmd_s) == 0x0020, "Size of usercmd_s must be 0x0020 (32 bytes).");
+
+struct __declspec(align(4)) client_t
+{
+    char _pad[0x20E5C];
+    usercmd_s lastUsercmd;              // 0x20E5C, 0x0020
+    int lastClientCommand;              // 0x20E7C, 0x0004
+    char lastClientCommandString[1024]; // 0x20E80, 0x0004
+    gentity_s *gentity;                 // 0x21280, 0x0004
+    char name[32];                      // 0x21284, 0x0020
+    char _padding[0x81de0];             // Padding to reach 666760 bytes
+};
+
+/* 662 */
+enum OffhandSecondaryClass : __int32
+{
+    PLAYER_OFFHAND_SECONDARY_SMOKE = 0x0,
+    PLAYER_OFFHAND_SECONDARY_FLASH = 0x1,
+    PLAYER_OFFHAND_SECONDARIES_TOTAL = 0x2,
+};
+
+struct playerState_s
+{
+    int commandTime;
+    int pm_type;
+    int bobCycle;
+    int pm_flags;
+    int weapFlags;
+    int otherFlags;
+    int pm_time;
+    float origin[3];
+    float velocity[3];
+    float oldVelocity[2];
+    int weaponTime;
+    int weaponDelay;
+    int grenadeTimeLeft;
+    int throwBackGrenadeOwner;
+    int throwBackGrenadeTimeLeft;
+    int weaponRestrictKickTime;
+    int foliageSoundTime;
+    int gravity;
+    float leanf;
+    int speed;
+    float delta_angles[3];
+    int groundEntityNum;
+    float vLadderVec[3];
+    int jumpTime;
+    float jumpOriginZ;
+    int legsTimer;
+    int legsAnim;
+    int torsoTimer;
+    int torsoAnim;
+    int legsAnimDuration;
+    int torsoAnimDuration;
+    int damageTimer;
+    int damageDuration;
+    int flinchYawAnim;
+    int movementDir;
+    int eFlags;
+    int eventSequence;
+    int events[4];
+    unsigned int eventParms[4];
+    int oldEventSequence;
+    int clientNum;
+    int offHandIndex;
+    OffhandSecondaryClass offhandSecondary;
+    unsigned int weapon;
+    int weaponstate;
+    unsigned int weaponShotCount;
+    float fWeaponPosFrac;
+    int adsDelayTime;
+    int spreadOverride;
+    int spreadOverrideState;
+    int viewmodelIndex;
+    float viewangles[3];
+};
+
+struct entityState_s;
+struct clientState_s;
+struct svEntity_s;
+struct archivedEntity_s;
+struct cachedClient_s;
+struct cachedSnapshot_t;
+
+/* 9766 */
+struct serverStaticHeader_t
+{
+    client_t *clients;
+    int time;
+    int snapFlagServerBit;
+    int numSnapshotEntities;
+    int numSnapshotClients;
+    int nextSnapshotEntities;
+    entityState_s *snapshotEntities;
+    clientState_s *snapshotClients;
+    svEntity_s *svEntities;
+    float mapCenter[3];
+    archivedEntity_s *cachedSnapshotEntities;
+    cachedClient_s *cachedSnapshotClients;
+    unsigned __int8 *archivedSnapshotBuffer;
+    cachedSnapshot_t *cachedSnapshotFrames;
+    int nextCachedSnapshotFrames;
+    int nextArchivedSnapshotFrames;
+    int nextCachedSnapshotEntities;
+    int nextCachedSnapshotClients;
+    int num_entities;
+    int maxclients;
+    int fps;
+    int clientArchive;
+    gentity_s *gentities;
+    int gentitySize;
+    clientState_s *firstClientState;
+    playerState_s *firstPlayerState;
+    int clientSize;
+    unsigned int pad[3];
+};
+
+static_assert(sizeof(serverStaticHeader_t) == 0x0080, "Size of serverStaticHeader_t must be 0x0080.");
+
+struct scr_entref_t
+{
+    unsigned __int16 entnum;
+    unsigned __int16 classnum;
+};
+
+typedef void (*xfunction_t)(scr_entref_t);
 
 enum svscmd_type
 {
@@ -280,7 +474,6 @@ enum svscmd_type
 };
 
 struct cmd_function_s
-
 {
     cmd_function_s *next;
     const char *name;
@@ -299,11 +492,21 @@ void (*Scr_ObjectError)(const char *error) = reinterpret_cast<void (*)(const cha
 // void (*ClientCommand)(int clientNum) = reinterpret_cast<void (*)(int clientNum)>(0x8227DCF0);
 void (*SV_Cmd_ArgvBuffer)(int arg, char *buffer, int bufferLength) = reinterpret_cast<void (*)(int arg, char *buffer, int bufferLength)>(0x82239F48);
 int (*I_strnicmp)(const char *s0, const char *s1, int n) = reinterpret_cast<int (*)(const char *s0, const char *s1, int n)>(0x821CDA98);
+void (*Scr_AddBool)(int value) = reinterpret_cast<void (*)(int value)>(0x82211238);
 
 cmd_function_s *cmd_functions = reinterpret_cast<cmd_function_s *>(0x82A2335C);
 gentity_s *g_entities = reinterpret_cast<gentity_s *>(0x8287CD08);
+serverStaticHeader_t *svsHeader = reinterpret_cast<serverStaticHeader_t *>(0x849F1580);
 
-void GScr_ExecuteClientCommand(scr_entref_t *entref)
+client_t *GetClientAtIndex(int index)
+{
+    size_t clientSize = 666760;
+    client_t *baseClient = svsHeader->clients;
+    client_t *clientAtIndex = (client_t *)((unsigned char *)baseClient + (index * clientSize));
+    return clientAtIndex;
+}
+
+void GScr_ExecuteClientCommand(scr_entref_t entref)
 {
     gentity_s *ent = GetEntity(0);
 
@@ -363,11 +566,62 @@ void Cmd_UFO_f(gentity_s *ent)
         SV_GameSendServerCommand(clientNum, SV_CMD_CAN_IGNORE, "e \"GAME_UFOON\"");
 }
 
-void GScr_testfunction(scr_entref_t *entref)
+void GScr_testfunction(scr_entref_t entref)
 {
     // std::cout << "scr_entref_t address: " << entref << std::endl;
     // gentity_s *gent = GetEntity(entref);
-    // printFunctionNames();
+}
+
+void PlayerCmd_JumpButtonPressed(scr_entref_t entref)
+{
+    // if (Scr_GetNumParam())
+    //     Scr_Error("Usage: <client> JumpButtonPressed()\n");
+
+    client_t *cl = GetClientAtIndex(entref.entnum);
+
+    if (!cl)
+        Scr_ObjectError("not a client\n");
+
+    Scr_AddBool(cl->lastUsercmd.buttons & KEY_MASK_JUMP);
+}
+
+void PlayerCmd_HoldBreathButtonPressed(scr_entref_t entref)
+{
+    // if (Scr_GetNumParam())
+    //     Scr_Error("Usage: <client> HoldBreathButtonPressed()\n");
+
+    client_t *cl = GetClientAtIndex(entref.entnum);
+
+    if (!cl)
+        Scr_ObjectError("not a client\n");
+
+    Scr_AddBool(cl->lastUsercmd.buttons & KEY_MASK_HOLDBREATH);
+}
+
+void PlayerCmd_LeanLeftButtonPressed(scr_entref_t entref)
+{
+    // if (Scr_GetNumParam())
+    //     Scr_Error("Usage: <client> LeanLeftButtonPressed()\n");
+
+    client_t *cl = GetClientAtIndex(entref.entnum);
+
+    if (!cl)
+        Scr_ObjectError("not a client\n");
+
+    Scr_AddBool(cl->lastUsercmd.buttons & KEY_MASK_LEANLEFT);
+}
+
+void PlayerCmd_LeanRightButtonPressed(scr_entref_t entref)
+{
+    // if (Scr_GetNumParam())
+    //     Scr_Error("Usage: <client> LeanRightButtonPressed()\n");
+
+    client_t *cl = GetClientAtIndex(entref.entnum);
+
+    if (!cl)
+        Scr_ObjectError("not a client\n");
+
+    Scr_AddBool(cl->lastUsercmd.buttons & KEY_MASK_LEANRIGHT);
 }
 
 Detour *pScr_GetMethodDetour = nullptr;
@@ -384,6 +638,18 @@ xfunction_t Scr_GetMethodHook(const char **pName, int *type)
 
     if (std::strcmp(*pName, "testfunction") == 0)
         return &GScr_testfunction;
+
+    if (std::strcmp(*pName, "jumpbuttonpressed") == 0)
+        return &PlayerCmd_JumpButtonPressed;
+
+    if (std::strcmp(*pName, "holdbreathbuttonpressed") == 0)
+        return &PlayerCmd_HoldBreathButtonPressed;
+
+    if (std::strcmp(*pName, "leanleftbuttonpressed") == 0)
+        return &PlayerCmd_LeanLeftButtonPressed;
+
+    if (std::strcmp(*pName, "leanrightbuttonpressed") == 0)
+        return &PlayerCmd_LeanRightButtonPressed;
 
     return ret;
 }
