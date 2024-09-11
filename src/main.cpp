@@ -301,57 +301,7 @@ struct entityShared_t
     int eventTime;
 };
 
-static_assert(sizeof(entityShared_t) == 0x0068, "size of gentity_s is not 0x0068");
-
-struct gclient_s
-
-{
-    char _pad[0x30a4];
-    int spectatorClient;
-    int noclip; // 0x30a8
-    int ufo;    // 0x30ac
-};
-
-static_assert(offsetof(gclient_s, noclip) == 0x30a8, "");
-static_assert(offsetof(gclient_s, ufo) == 0x30ac, "");
-
-struct gentity_s
-{
-    // entityState_s s;
-    char _pad[0x00F4]; // 0x0000, 0x00F4
-    entityShared_t r;  // 0x00F4, 0x0068
-    gclient_s *client; // 0x015c, 0x0004
-};
-
-static_assert(offsetof(gentity_s, client) == 0x0015C, "client is not at the correct offset 0x0015C");
-
-/* 8748 */
-struct __declspec(align(2)) usercmd_s
-{
-    int serverTime;
-    int buttons;
-    int angles[3];
-    unsigned __int8 weapon;
-    unsigned __int8 offHandIndex;
-    char forwardmove;
-    char rightmove;
-    float meleeChargeYaw;
-    unsigned __int8 meleeChargeDist;
-    char selectedLocation[2];
-};
-
-static_assert(sizeof(usercmd_s) == 0x0020, "Size of usercmd_s must be 0x0020 (32 bytes).");
-
-struct __declspec(align(4)) client_t
-{
-    char _pad[0x20E5C];
-    usercmd_s lastUsercmd;              // 0x20E5C, 0x0020
-    int lastClientCommand;              // 0x20E7C, 0x0004
-    char lastClientCommandString[1024]; // 0x20E80, 0x0004
-    gentity_s *gentity;                 // 0x21280, 0x0004
-    char name[32];                      // 0x21284, 0x0020
-    char _padding[0x81de0];             // Padding to reach 666760 bytes
-};
+static_assert(sizeof(entityShared_t) == 0x0068, "size of entityShared_t is not 0x0068");
 
 /* 662 */
 enum OffhandSecondaryClass : __int32
@@ -359,6 +309,174 @@ enum OffhandSecondaryClass : __int32
     PLAYER_OFFHAND_SECONDARY_SMOKE = 0x0,
     PLAYER_OFFHAND_SECONDARY_FLASH = 0x1,
     PLAYER_OFFHAND_SECONDARIES_TOTAL = 0x2,
+};
+
+/* 663 */
+enum ViewLockTypes : __int32
+{
+    PLAYERVIEWLOCK_NONE = 0x0,
+    PLAYERVIEWLOCK_FULL = 0x1,
+    PLAYERVIEWLOCK_WEAPONJITTER = 0x2,
+    PLAYERVIEWLOCKCOUNT = 0x3,
+};
+
+/* 665 */
+enum team_t : __int32
+{
+    TEAM_FREE = 0x0,
+    TEAM_AXIS = 0x1,
+    TEAM_ALLIES = 0x2,
+    TEAM_SPECTATOR = 0x3,
+    TEAM_NUM_TEAMS = 0x4,
+};
+
+/* 8733 */
+struct SprintState
+{
+    int sprintButtonUpRequired;
+    int sprintDelay;
+    int lastSprintStart;
+    int lastSprintEnd;
+    int sprintStartMaxLength;
+};
+
+/* 8734 */
+struct MantleState
+{
+    float yaw;
+    int timer;
+    int transIndex;
+    int flags;
+};
+
+/* 664 */
+enum ActionSlotType : __int32
+{
+    ACTIONSLOTTYPE_DONOTHING = 0x0,
+    ACTIONSLOTTYPE_SPECIFYWEAPON = 0x1,
+    ACTIONSLOTTYPE_ALTWEAPONTOGGLE = 0x2,
+    ACTIONSLOTTYPE_NIGHTVISION = 0x3,
+    ACTIONSLOTTYPECOUNT = 0x4,
+};
+
+/* 8721 */
+struct ActionSlotParam_SpecifyWeapon
+{
+    unsigned int index;
+};
+
+/* 8735 */
+struct ActionSlotParam
+{
+    ActionSlotParam_SpecifyWeapon specifyWeapon;
+};
+
+/* 660 */
+enum objectiveState_t : __int32
+{
+    OBJST_EMPTY = 0x0,
+    OBJST_ACTIVE = 0x1,
+    OBJST_INVISIBLE = 0x2,
+    OBJST_DONE = 0x3,
+    OBJST_CURRENT = 0x4,
+    OBJST_FAILED = 0x5,
+    OBJST_NUMSTATES = 0x6,
+};
+
+/* 8736 */
+struct objective_t
+{
+    objectiveState_t state;
+    float origin[3];
+    int entNum;
+    int teamNum;
+    int icon;
+};
+
+/* 667 */
+enum he_type_t : __int32
+{
+    HE_TYPE_FREE = 0x0,
+    HE_TYPE_TEXT = 0x1,
+    HE_TYPE_VALUE = 0x2,
+    HE_TYPE_PLAYERNAME = 0x3,
+    HE_TYPE_MAPNAME = 0x4,
+    HE_TYPE_GAMETYPE = 0x5,
+    HE_TYPE_MATERIAL = 0x6,
+    HE_TYPE_TIMER_DOWN = 0x7,
+    HE_TYPE_TIMER_UP = 0x8,
+    HE_TYPE_TENTHS_TIMER_DOWN = 0x9,
+    HE_TYPE_TENTHS_TIMER_UP = 0xA,
+    HE_TYPE_CLOCK_DOWN = 0xB,
+    HE_TYPE_CLOCK_UP = 0xC,
+    HE_TYPE_WAYPOINT = 0xD,
+    HE_TYPE_COUNT = 0xE,
+};
+
+/* 8713 */
+struct $0D0CB43DF22755AD856C77DD3F304010
+{
+    unsigned __int8 r;
+    unsigned __int8 g;
+    unsigned __int8 b;
+    unsigned __int8 a;
+};
+
+/* 8714 */
+union hudelem_color_t {
+    $0D0CB43DF22755AD856C77DD3F304010 __s0;
+    int rgba;
+};
+
+/* 8737 */
+struct hudelem_s
+{
+    he_type_t type;
+    float x;
+    float y;
+    float z;
+    int targetEntNum;
+    float fontScale;
+    int font;
+    int alignOrg;
+    int alignScreen;
+    hudelem_color_t color;
+    hudelem_color_t fromColor;
+    int fadeStartTime;
+    int fadeTime;
+    int label;
+    int width;
+    int height;
+    int materialIndex;
+    int offscreenMaterialIdx;
+    int fromWidth;
+    int fromHeight;
+    int scaleStartTime;
+    int scaleTime;
+    float fromX;
+    float fromY;
+    int fromAlignOrg;
+    int fromAlignScreen;
+    int moveStartTime;
+    int moveTime;
+    int time;
+    int duration;
+    float value;
+    int text;
+    float sort;
+    hudelem_color_t glowColor;
+    int fxBirthTime;
+    int fxLetterTime;
+    int fxDecayStartTime;
+    int fxDecayDuration;
+    int soundID;
+    int flags;
+};
+
+typedef struct hudElemState_t
+{
+    hudelem_s current[31];
+    hudelem_s archival[31];
 };
 
 struct playerState_s
@@ -415,6 +533,374 @@ struct playerState_s
     int spreadOverrideState;
     int viewmodelIndex;
     float viewangles[3];
+    int viewHeightTarget;
+    float viewHeightCurrent;
+    int viewHeightLerpTime;
+    int viewHeightLerpTarget;
+    int viewHeightLerpDown;
+    float viewAngleClampBase[2];
+    float viewAngleClampRange[2];
+    int damageEvent;
+    int damageYaw;
+    int damagePitch;
+    int damageCount;
+    int stats[5];
+    int ammo[128];
+    int ammoclip[128];
+    unsigned int weapons[4];
+    unsigned int weaponold[4];
+    unsigned int weaponrechamber[4];
+    float proneDirection;
+    float proneDirectionPitch;
+    float proneTorsoPitch;
+    ViewLockTypes viewlocked;
+    int viewlocked_entNum;
+    int cursorHint;
+    int cursorHintString;
+    int cursorHintEntIndex;
+    int iCompassPlayerInfo;
+    int radarEnabled;
+    int locationSelectionInfo;
+    SprintState sprintState;
+    float fTorsoPitch;
+    float fWaistPitch;
+    float holdBreathScale;
+    int holdBreathTimer;
+    float moveSpeedScaleMultiplier;
+    MantleState mantleState;
+    float meleeChargeYaw;
+    int meleeChargeDist;
+    int meleeChargeTime;
+    int perks;
+    ActionSlotType actionSlotType[4];
+    ActionSlotParam actionSlotParam[4];
+    int entityEventSequence;
+    int weapAnim;
+    float aimSpreadScale;
+    int shellshockIndex;
+    int shellshockTime;
+    int shellshockDuration;
+    float dofNearStart;
+    float dofNearEnd;
+    float dofFarStart;
+    float dofFarEnd;
+    float dofNearBlur;
+    float dofFarBlur;
+    float dofViewmodelStart;
+    float dofViewmodelEnd;
+    int hudElemLastAssignedSoundID;
+    objective_t objective[16];
+    unsigned __int8 weaponmodels[128];
+    int deltaTime;
+    int killCamEntity;
+    hudElemState_t hud;
+};
+
+/* 770 */
+enum clientConnected_t : __int32
+{
+    CON_DISCONNECTED = 0x0,
+    CON_CONNECTING = 0x1,
+    CON_CONNECTED = 0x2,
+};
+
+/* 771 */
+enum sessionState_t : __int32
+{
+    SESS_STATE_PLAYING = 0x0,
+    SESS_STATE_DEAD = 0x1,
+    SESS_STATE_SPECTATOR = 0x2,
+    SESS_STATE_INTERMISSION = 0x3,
+};
+
+/* 8748 */
+struct __declspec(align(2)) usercmd_s
+{
+    int serverTime;
+    int buttons;
+    int angles[3];
+    unsigned __int8 weapon;
+    unsigned __int8 offHandIndex;
+    char forwardmove;
+    char rightmove;
+    float meleeChargeYaw;
+    unsigned __int8 meleeChargeDist;
+    char selectedLocation[2];
+};
+
+static_assert(sizeof(usercmd_s) == 0x0020, "Size of usercmd_s must be 0x0020 (32 bytes).");
+
+/* 9099 */
+struct playerTeamState_t
+{
+    int location;
+};
+
+/* 8741 */
+struct clientState_s
+{
+    int clientIndex;
+    team_t team;
+    int modelindex;
+    int attachModelIndex[6];
+    int attachTagIndex[6];
+    char name[32];
+    float maxSprintTimeMultiplier;
+    int rank;
+    int prestige;
+    int perks;
+    int voiceConnectivityBits;
+    char clanAbbrev[8];
+    int attachedVehEntNum;
+    int attachedVehSlotIndex;
+};
+
+/* 9100 */
+struct clientSession_t
+{
+    sessionState_t sessionState; // correct
+    int forceSpectatorClient;
+    int killCamEntity;
+    int status_icon;
+    int archiveTime;
+    int score;
+    int deaths;
+    int kills;
+    int assists;
+    unsigned __int16 scriptPersId;
+    clientConnected_t connected;
+    usercmd_s cmd;
+    usercmd_s oldcmd;
+    int localClient;
+    int predictItemPickup;
+    char newnetname[32];
+    int maxHealth;
+    int enterTime;
+    playerTeamState_t teamState;
+    int voteCount;
+    int teamVoteCount;
+    float moveSpeedScaleMultiplier;
+    int viewmodelIndex;
+    int noSpectate;
+    int teamInfo;
+    clientState_s cs;
+    int psOffsetTime;
+};
+
+struct gentity_s;
+
+struct gclient_s
+{
+    playerState_s ps;
+    char _pad[0x04]; // not sure in correct position but retail TU4 size is 4 bytes larger
+    clientSession_t sess;
+    int spectatorClient;
+    int noclip; // 0x30a8
+    int ufo;    // 0x30ac
+    int bFrozen;
+    int lastCmdTime;
+    int buttons;
+    int oldbuttons;
+    int latched_buttons;
+    int buttonsSinceLastFrame;
+    float oldOrigin[3];
+    float fGunPitch;
+    float fGunYaw;
+    int damage_blood;
+    float damage_from[3];
+    int damage_fromWorld;
+    int accurateCount;
+    int accuracy_shots;
+    int accuracy_hits;
+    int inactivityTime;
+    int inactivityWarning;
+    int lastVoiceTime;
+    int switchTeamTime;
+    float currentAimSpreadScale;
+    gentity_s *persistantPowerup;
+    int portalID;
+    int dropWeaponTime;
+    int sniperRifleFiredTime;
+    float sniperRifleMuzzleYaw;
+    int PCSpecialPickedUpCount;
+    EntHandle useHoldEntity;
+    int useHoldTime;
+    int useButtonDone;
+    int iLastCompassPlayerInfoEnt;
+    int compassPingTime;
+    int damageTime;
+    float v_dmg_roll;
+    float v_dmg_pitch;
+    float swayViewAngles[3];
+    float swayOffset[3];
+    float swayAngles[3];
+    float vLastMoveAng[3];
+    float fLastIdleFactor;
+    float vGunOffset[3];
+    float vGunSpeed[3];
+    int weapIdleTime;
+    int lastServerTime;
+    int lastSpawnTime;
+    unsigned int lastWeapon;
+    bool previouslyFiring;
+    bool previouslyUsingNightVision;
+    bool previouslySprinting;
+    int hasRadar;
+    int lastStand;
+    int lastStandTime;
+};
+
+static_assert(offsetof(gclient_s, noclip) == 0x30a8, "");
+static_assert(offsetof(gclient_s, ufo) == 0x30ac, "");
+static_assert(sizeof(gclient_s) == 12724, "Size of gclient_s must be 12724.");
+
+static_assert(offsetof(gclient_s, sess) + offsetof(clientSession_t, cmd) == 12180, "sess.cmd is not at offset 12180");
+static_assert(offsetof(gclient_s, sess) + offsetof(clientSession_t, archiveTime) == 12152, "sess.cmd is not at offset 12152");
+
+struct gentity_s
+{
+    // entityState_s s;
+    char _pad[0x00F4]; // 0x0000, 0x00F4
+    entityShared_t r;  // 0x00F4, 0x0068
+    gclient_s *client; // 0x015c, 0x0004
+};
+
+static_assert(offsetof(gentity_s, client) == 0x0015C, "client is not at the correct offset 0x0015C");
+
+/* 671 */
+enum netsrc_t : __int32
+{
+    NS_CLIENT1 = 0x0,
+    NS_CLIENT2 = 0x1,
+    NS_CLIENT3 = 0x2,
+    NS_CLIENT4 = 0x3,
+    NS_SERVER = 0x4,
+    NS_MAXCLIENTS = 0x4,
+    NS_PACKET = 0x5,
+};
+
+/* 659 */
+enum netadrtype_t : __int32
+{
+    NA_BOT = 0x0,
+    NA_BAD = 0x1,
+    NA_LOOPBACK = 0x2,
+    NA_BROADCAST = 0x3,
+    NA_IP = 0x4,
+};
+
+/* 8757 */
+struct __declspec(align(4)) netadr_t
+{
+    netadrtype_t type;
+    unsigned __int8 ip[4];
+    unsigned __int16 port;
+};
+
+/* 8723 */
+struct netProfilePacket_t
+{
+    int iTime;
+    int iSize;
+    int bFragment;
+};
+
+/* 8724 */
+struct netProfileStream_t
+{
+    netProfilePacket_t packets[60];
+    int iCurrPacket;
+    int iBytesPerSecond;
+    int iLastBPSCalcTime;
+    int iCountedPackets;
+    int iCountedFragments;
+    int iFragmentPercentage;
+    int iLargestPacket;
+    int iSmallestPacket;
+};
+
+/* 8755 */
+struct netProfileInfo_t
+{
+    netProfileStream_t send;
+    netProfileStream_t recieve;
+};
+
+/* 8758 */
+struct netchan_t
+{
+    int outgoingSequence;
+    netsrc_t sock;
+    int dropped;
+    int incomingSequence;
+    netadr_t remoteAddress;
+    int fragmentSequence;
+    int fragmentLength;
+    unsigned __int8 *fragmentBuffer;
+    int fragmentBufferSize;
+    int unsentFragments;
+    int unsentFragmentStart;
+    int unsentLength;
+    unsigned __int8 *unsentBuffer;
+    int unsentBufferSize;
+    netProfileInfo_t prof;
+};
+
+/* 9758 */
+const struct clientHeader_t
+{
+    int state;
+    int sendAsActive;
+    int deltaMessage;
+    int rateDelayed;
+    netchan_t netchan;
+    float predictedOrigin[3];
+    int predictedOriginServerTime;
+};
+
+static_assert(offsetof(clientHeader_t, deltaMessage) == 0x8, "");
+
+/* 9760 */
+struct svscmd_info_t
+{
+    char cmd[1024];
+    int time;
+    int type;
+};
+
+struct __declspec(align(4)) client_t
+{
+    // char _pad[0x20E5C];
+    clientHeader_t header;
+    const char *dropReason;
+    char userinfo[1024];
+    svscmd_info_t reliableCommandInfo[128];
+    int reliableSequence;
+    int reliableAcknowledge;
+    int reliableSent;
+    int messageAcknowledge;
+    int gamestateMessageNum;
+    int challenge;
+    usercmd_s lastUsercmd;              // 0x20E5C, 0x0020
+    int lastClientCommand;              // 0x20E7C, 0x0004
+    char lastClientCommandString[1024]; // 0x20E80, 0x0004
+    gentity_s *gentity;                 // 0x21280, 0x0004
+    char name[32];                      // 0x21284, 0x0020
+    char _padding[0x819e4];             // Padding to reach 666760 bytes
+};
+
+static_assert(sizeof(client_t) == 666760, "Size of client_t must be 666760.");
+static_assert(offsetof(client_t, gentity) == 0x21280, "");
+
+/* 9124 */
+struct level_locals_t
+{
+    gclient_s *clients;
+    gentity_s *gentities;
+    int gentitySize;
+    int num_entities;
+    gentity_s *firstFreeEnt;
+    gentity_s *lastFreeEnt;
 };
 
 struct entityState_s;
@@ -493,16 +979,26 @@ void (*Scr_ObjectError)(const char *error) = reinterpret_cast<void (*)(const cha
 void (*SV_Cmd_ArgvBuffer)(int arg, char *buffer, int bufferLength) = reinterpret_cast<void (*)(int arg, char *buffer, int bufferLength)>(0x82239F48);
 int (*I_strnicmp)(const char *s0, const char *s1, int n) = reinterpret_cast<int (*)(const char *s0, const char *s1, int n)>(0x821CDA98);
 void (*Scr_AddBool)(int value) = reinterpret_cast<void (*)(int value)>(0x82211238);
+void (*SV_ClientThink)(client_t *cl, usercmd_s *cmd) = reinterpret_cast<void (*)(client_t *cl, usercmd_s *cmd)>(0x82208448);
 
 cmd_function_s *cmd_functions = reinterpret_cast<cmd_function_s *>(0x82A2335C);
 gentity_s *g_entities = reinterpret_cast<gentity_s *>(0x8287CD08);
 serverStaticHeader_t *svsHeader = reinterpret_cast<serverStaticHeader_t *>(0x849F1580);
+level_locals_t *level = reinterpret_cast<level_locals_t *>(0x82A07650);
 
 client_t *GetClientAtIndex(int index)
 {
     size_t clientSize = 666760;
     client_t *baseClient = svsHeader->clients;
     client_t *clientAtIndex = (client_t *)((unsigned char *)baseClient + (index * clientSize));
+    return clientAtIndex;
+}
+
+gclient_s *GetGclientAtIndex(int index)
+{
+    size_t clientSize = 12724;
+    gclient_s *baseClient = level->clients;
+    gclient_s *clientAtIndex = (gclient_s *)((unsigned char *)baseClient + (index * clientSize));
     return clientAtIndex;
 }
 
@@ -568,8 +1064,13 @@ void Cmd_UFO_f(gentity_s *ent)
 
 void GScr_testfunction(scr_entref_t entref)
 {
+    // client_t *cl = GetClientAtIndex(entref.entnum);
     // std::cout << "scr_entref_t address: " << entref << std::endl;
     // gentity_s *gent = GetEntity(entref);
+
+    std::cout << "Size of playerState_s: " << sizeof(playerState_s) << " bytes" << std::endl;
+    std::cout << "Size of clientSession_t: " << sizeof(clientSession_t) << " bytes" << std::endl;
+    std::cout << "Size of client_t: " << sizeof(client_t) << " bytes" << std::endl;
 }
 
 void PlayerCmd_JumpButtonPressed(scr_entref_t entref)
@@ -677,6 +1178,123 @@ void ClientCommandHook(int clientNum)
         pClientCommandDetour->GetOriginal<decltype(&ClientCommandHook)>()(clientNum);
 }
 
+void printUserCmd(const usercmd_s *cmd)
+{
+    std::cout << "cmd->serverTime: " << cmd->serverTime << std::endl;
+    std::cout << "cmd->buttons: " << cmd->buttons << std::endl;
+    std::cout << "cmd->angles: [" << cmd->angles[0] << ", " << cmd->angles[1] << ", " << cmd->angles[2] << "]" << std::endl;
+    std::cout << "cmd->weapon: " << static_cast<int>(cmd->weapon) << std::endl;
+    std::cout << "cmd->offHandIndex: " << static_cast<int>(cmd->offHandIndex) << std::endl;
+    std::cout << "cmd->forwardmove: " << static_cast<int>(cmd->forwardmove) << std::endl;
+    std::cout << "cmd->rightmove: " << static_cast<int>(cmd->rightmove) << std::endl;
+    std::cout << "cmd->meleeChargeYaw: " << cmd->meleeChargeYaw << std::endl;
+    std::cout << "cmd->meleeChargeDist: " << static_cast<int>(cmd->meleeChargeDist) << std::endl;
+    std::cout << "cmd->selectedLocation: [" << static_cast<int>(cmd->selectedLocation[0]) << ", " << static_cast<int>(cmd->selectedLocation[1]) << "]" << std::endl;
+}
+
+Detour *pSV_BotUserMoveDetour = nullptr;
+
+bool doneOnce = false;
+
+void SV_BotUserMoveHook(client_t *cl)
+{
+    // if (!doneOnce)
+    // {
+    //     pSV_BotUserMoveDetour->GetOriginal<decltype(&SV_BotUserMoveHook)>()(cl);
+    //     doneOnce = true;
+    //     printUserCmd(&cl->lastUsercmd);
+    //     std::cout << std::endl;
+    //     std::cout << std::endl;
+    // };
+
+    // printUserCmd(&cl->lastUsercmd);
+
+    if (!cl->gentity)
+        return;
+
+    gclient_s *gclient = GetGclientAtIndex(1);
+    std::cout << gclient << std::endl;
+
+    if (gclient->sess.archiveTime == 0)
+    {
+        usercmd_s cmd = {
+            0,               // serverTime
+            0,               // buttons
+            { 0, -27, 260 }, // angles
+            0,               // weapon
+            0,               // offHandIndex
+            0,               // forwardmove
+            0,               // rightmove
+            0.0f,            // meleeChargeYaw
+            0,               // meleeChargeDist
+            { 0, 0 }         // selectedLocation
+        };
+        cmd.buttons |= KEY_MASK_JUMP;
+        printUserCmd(&cmd);
+        std::cout << std::endl;
+        cl->header.deltaMessage = cl->header.netchan.outgoingSequence - 1;
+        SV_ClientThink(cl, &cmd);
+    }
+}
+
+// if(level.clients)
+
+// usercmd_s cmd = {
+//     0,              // serverTime
+//     KEY_MASK_JUMP,  // buttons
+//     { 0, -145, 0 }, // angles
+//     15,             // weapon
+//     0,              // offHandIndex
+//     127,            // forwardmove
+//     0,              // rightmove
+//     0.0f,           // meleeChargeYaw
+//     0,              // meleeChargeDist
+//     { 0, 0 }        // selectedLocation
+// };
+// cl->header.deltaMessage = cl->header.netchan.outgoingSequence - 1;
+// SV_ClientThink(cl, &cmd);
+
+// usercmd_s cmd = cl->lastUsercmd;
+// cmd.serverTime = svsHeader->time;
+// cmd.buttons = 1024;
+
+// cl->header.deltaMessage = cl->header.netchan.outgoingSequence - 1;
+
+// cl->header.deltaMessage = cl->header.netchan.outgoingSequence - 1;
+
+// usercmd_s cmd = { 0 };
+// cmd.serverTime = svsHeader->time;
+// cmd.buttons = 1024;
+// cmd.angles = cl->lastUsercmd->angles;
+// cmd.weapon = cl->lastUsercmd->weapon;
+// cmd.offHandIndex = cl->lastUsercmd->offHandIndex;
+// cmd.forwardmove = cl->lastUsercmd->forwardmove;
+// cmd.rightmove = cl->lastUsercmd->rightmove;
+// cmd.meleeChargeYaw = cl->lastUsercmd->meleeChargeYaw;
+// cmd.meleeChargeDist = cl->lastUsercmd->meleeChargeDist;
+// cmd.selectedLocation = cl->lastUsercmd->selectedLocation;
+
+// usercmd_s cmd = cl->lastUsercmd;
+// cmd.buttons = 1024;               // New buttons value
+// cmd.serverTime = svsHeader->time; // New server time value
+
+// printUserCmd(&cl->lastUsercmd);
+// std::cout << std::endl;
+
+// long *deltaMessage = (long *)((char *)cl + 0x08);
+// long *outgoingSequence = (long *)((char *)cl + 0x10);
+
+// *deltaMessage = *outgoingSequence - 1;
+
+// // client -> deltaMessage = 00000008
+// // client->netchan.outgoingSequence = 00000010
+// // client->deltaMessage = client->netchan.outgoingSequence - 1;
+
+// SV_ClientThink(cl, &cmd);
+
+// noop to prevent bots random movement
+// pSV_BotUserMoveDetour->GetOriginal<decltype(&SV_BotUserMoveHook)>()(cl);
+
 // Sets up the hook
 void InitIW3()
 {
@@ -689,6 +1307,9 @@ void InitIW3()
 
     pClientCommandDetour = new Detour(0x8227DCF0, ClientCommandHook);
     pClientCommandDetour->Install();
+
+    pSV_BotUserMoveDetour = new Detour(0x822009A8, SV_BotUserMoveHook);
+    pSV_BotUserMoveDetour->Install();
 
     Cmd_AddCommand("noclip");
     Cmd_AddCommand("ufo");
@@ -710,6 +1331,9 @@ int DllMain(HANDLE hModule, DWORD reason, void *pReserved)
 
         if (pClientCommandDetour)
             delete pClientCommandDetour;
+
+        if (pSV_BotUserMoveDetour)
+            delete pSV_BotUserMoveDetour;
 
         // We give the system some time to clean up the thread before exiting
         Sleep(250);
