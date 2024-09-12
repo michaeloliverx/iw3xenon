@@ -682,7 +682,7 @@ void InitIW3()
 {
     // Waiting a little bit for the game to be fully loaded in memory
     Sleep(1000);
-    XNotifyQueueUI(0, 0, XNOTIFY_SYSTEM, L"Call of Duty 4", nullptr);
+    XNotifyQueueUI(0, 0, XNOTIFY_SYSTEM, L"iw3xenon loaded - by mo", nullptr);
 
     pScr_GetMethodDetour = new Detour(0x822570E0, Scr_GetMethodHook);
     pScr_GetMethodDetour->Install();
