@@ -760,12 +760,13 @@ static_assert(offsetof(gclient_s, sess) + offsetof(clientSession_t, archiveTime)
 struct gentity_s
 {
     // entityState_s s;
+    // entityShared_t r;
     char _pad[0x00F4]; // 0x0000, 0x00F4
     entityShared_t r;  // 0x00F4, 0x0068
     gclient_s *client; // 0x015c, 0x0004
 };
 
-static_assert(offsetof(gentity_s, client) == 0x0015C, "client is not at the correct offset 0x0015C");
+static_assert(offsetof(gentity_s, client) == 0x0015C, "");
 
 /* 671 */
 enum netsrc_t : __int32
@@ -903,7 +904,10 @@ struct level_locals_t
     gentity_s *lastFreeEnt;
 };
 
-struct entityState_s;
+struct entityState_s
+{
+    int index;
+};
 struct clientState_s;
 struct svEntity_s;
 struct archivedEntity_s;
@@ -968,7 +972,14 @@ struct cmd_function_s
     void(__cdecl *function)();
 };
 
-gentity_s *(*GetEntity)(scr_entref_t *entref) = reinterpret_cast<gentity_s *(*)(scr_entref_t *)>(0x82257F30);
+gentity_s *(*Scr_GetEntity)(scr_entref_t *entref) = reinterpret_cast<gentity_s *(*)(scr_entref_t *)>(0x8224EE68);
+void (*ScrCmd_Delete)(scr_entref_t entref) = reinterpret_cast<void (*)(scr_entref_t entref)>(0x822637A8);
+gentity_s *(*GetEntity)(scr_entref_t entref) = reinterpret_cast<gentity_s *(*)(scr_entref_t entref)>(0x82257F30);
+void (*SV_UnlinkEntity)(gentity_s *ent) = reinterpret_cast<void (*)(gentity_s *)>(0x82355F08);
+int (*SV_SetBrushModel)(gentity_s *ent) = reinterpret_cast<int (*)(gentity_s *)>(0x82205050);
+void (*SV_LinkEntity)(gentity_s *ent) = reinterpret_cast<void (*)(gentity_s *)>(0x82355A00);
+void (*G_FreeEntity)(gentity_s *ent) = reinterpret_cast<void (*)(gentity_s *)>(0x8224BDD0);
+
 void (*CG_GameMessage)(int localClientNum, const char *msg) = reinterpret_cast<void (*)(int localClientNum, const char *msg)>(0x8230AAF0);
 void (*SV_ExecuteClientCommand)(client_t *cl, const char *s, int clientOK) = reinterpret_cast<void (*)(client_t *cl, const char *s, int clientOK)>(0x82208088);
 void (*SV_GameSendServerCommand)(int clientNum, svscmd_type type, const char *text) = reinterpret_cast<void (*)(int clientNum, svscmd_type type, const char *text)>(0x82204BB8);
@@ -1004,7 +1015,7 @@ gclient_s *GetGclientAtIndex(int index)
 
 void GScr_ExecuteClientCommand(scr_entref_t entref)
 {
-    gentity_s *ent = GetEntity(0);
+    gentity_s *ent = GetEntity(entref);
 
     // todo: find address for Scr_GetNumParam
     // if (Scr_GetNumParam() != 1)
@@ -1125,6 +1136,53 @@ void PlayerCmd_LeanRightButtonPressed(scr_entref_t entref)
     Scr_AddBool(cl->lastUsercmd.buttons & KEY_MASK_LEANRIGHT);
 }
 
+void GScr_CloneBrushModelToScriptModel(scr_entref_t entref)
+{
+    // // Common checks.
+    // if (Scr_GetNumParam() != 1)
+    //     Scr_Error("usage: <scriptModelEnt> CloneBrushModelToScriptModel(<brushModelEnt>)");
+
+    // // Object checks.
+    // gentity_t* scriptEnt = VM_GetGEntityForNum(scriptModelEntNum);
+    // if (scriptEnt->classname != (unsigned short)scr_const.script_model)
+    //     Scr_ObjectError("passed entity is not a script_model entity");
+
+    // if (scriptEnt->s.eType != 6)
+    //     Scr_ObjectError("passed entity type is not 6 (TODO: what is it?)");
+
+    // // Arguments checks.
+    // gentity_t* brushEnt = Scr_GetEntity(0);
+    // if (brushEnt->classname != (unsigned short)scr_const.script_brushmodel && brushEnt->classname != (unsigned short)scr_const.script_model && brushEnt->classname != (unsigned short)scr_const.script_origin && brushEnt->classname != (unsigned short)scr_const.light)
+    //     Scr_ParamError(0, "brush model entity classname must be one of {script_brushmodel, script_model, script_origin, light}");
+
+    // if (!brushEnt->s.index)
+    //     Scr_ParamError(0, "brush model entity has no collision model");
+
+    // // Let's do this...
+    // SV_UnlinkEntity(scriptEnt);
+    // scriptEnt->s.index = brushEnt->s.index;
+    // int contents = scriptEnt->r.contents;
+    // SV_SetBrushModel(scriptEnt);
+    // scriptEnt->r.contents |= contents;
+    // SV_LinkEntity(scriptEnt);
+
+    gentity_s *scriptEnt = GetEntity(entref);
+    gentity_s *brushEnt = Scr_GetEntity(0);
+
+    SV_UnlinkEntity(scriptEnt);
+    // *(int *)((char *)scriptEnt + 136) = *(int *)((char *)brushEnt + 136); // ->s.index // todo proper reverse this index, if this line is missing, a nice big brush is spawned
+    int brushEntIndex = *(int *)((char *)brushEnt + 136);
+    std::cout << "brushEntIndex: " << brushEntIndex << std::endl;
+
+    int scriptEnt = *(int *)((char *)scriptEnt + 136);
+    std::cout << "scriptEnt: " << scriptEnt << std::endl;
+
+    int contents = *(int *)((char *)scriptEnt + 288); // r.contents
+    SV_SetBrushModel(scriptEnt);
+    *(int *)((char *)scriptEnt + 288) |= contents;
+    SV_LinkEntity(scriptEnt);
+}
+
 Detour *pScr_GetMethodDetour = nullptr;
 
 xfunction_t Scr_GetMethodHook(const char **pName, int *type)
@@ -1152,6 +1210,9 @@ xfunction_t Scr_GetMethodHook(const char **pName, int *type)
     if (std::strcmp(*pName, "leanrightbuttonpressed") == 0)
         return &PlayerCmd_LeanRightButtonPressed;
 
+    if (std::strcmp(*pName, "clonebrushmodeltoscriptmodel") == 0)
+        return &GScr_CloneBrushModelToScriptModel;
+
     return ret;
 }
 
@@ -1178,122 +1239,13 @@ void ClientCommandHook(int clientNum)
         pClientCommandDetour->GetOriginal<decltype(&ClientCommandHook)>()(clientNum);
 }
 
-void printUserCmd(const usercmd_s *cmd)
-{
-    std::cout << "cmd->serverTime: " << cmd->serverTime << std::endl;
-    std::cout << "cmd->buttons: " << cmd->buttons << std::endl;
-    std::cout << "cmd->angles: [" << cmd->angles[0] << ", " << cmd->angles[1] << ", " << cmd->angles[2] << "]" << std::endl;
-    std::cout << "cmd->weapon: " << static_cast<int>(cmd->weapon) << std::endl;
-    std::cout << "cmd->offHandIndex: " << static_cast<int>(cmd->offHandIndex) << std::endl;
-    std::cout << "cmd->forwardmove: " << static_cast<int>(cmd->forwardmove) << std::endl;
-    std::cout << "cmd->rightmove: " << static_cast<int>(cmd->rightmove) << std::endl;
-    std::cout << "cmd->meleeChargeYaw: " << cmd->meleeChargeYaw << std::endl;
-    std::cout << "cmd->meleeChargeDist: " << static_cast<int>(cmd->meleeChargeDist) << std::endl;
-    std::cout << "cmd->selectedLocation: [" << static_cast<int>(cmd->selectedLocation[0]) << ", " << static_cast<int>(cmd->selectedLocation[1]) << "]" << std::endl;
-}
-
 Detour *pSV_BotUserMoveDetour = nullptr;
-
-bool doneOnce = false;
 
 void SV_BotUserMoveHook(client_t *cl)
 {
-    // if (!doneOnce)
-    // {
-    //     pSV_BotUserMoveDetour->GetOriginal<decltype(&SV_BotUserMoveHook)>()(cl);
-    //     doneOnce = true;
-    //     printUserCmd(&cl->lastUsercmd);
-    //     std::cout << std::endl;
-    //     std::cout << std::endl;
-    // };
-
-    // printUserCmd(&cl->lastUsercmd);
-
-    if (!cl->gentity)
-        return;
-
-    gclient_s *gclient = GetGclientAtIndex(1);
-    std::cout << gclient << std::endl;
-
-    if (gclient->sess.archiveTime == 0)
-    {
-        usercmd_s cmd = {
-            0,               // serverTime
-            0,               // buttons
-            { 0, -27, 260 }, // angles
-            0,               // weapon
-            0,               // offHandIndex
-            0,               // forwardmove
-            0,               // rightmove
-            0.0f,            // meleeChargeYaw
-            0,               // meleeChargeDist
-            { 0, 0 }         // selectedLocation
-        };
-        cmd.buttons |= KEY_MASK_JUMP;
-        printUserCmd(&cmd);
-        std::cout << std::endl;
-        cl->header.deltaMessage = cl->header.netchan.outgoingSequence - 1;
-        SV_ClientThink(cl, &cmd);
-    }
+    // noop
+    // pSV_BotUserMoveDetour->GetOriginal<decltype(&SV_BotUserMoveHook)>()(cl);
 }
-
-// if(level.clients)
-
-// usercmd_s cmd = {
-//     0,              // serverTime
-//     KEY_MASK_JUMP,  // buttons
-//     { 0, -145, 0 }, // angles
-//     15,             // weapon
-//     0,              // offHandIndex
-//     127,            // forwardmove
-//     0,              // rightmove
-//     0.0f,           // meleeChargeYaw
-//     0,              // meleeChargeDist
-//     { 0, 0 }        // selectedLocation
-// };
-// cl->header.deltaMessage = cl->header.netchan.outgoingSequence - 1;
-// SV_ClientThink(cl, &cmd);
-
-// usercmd_s cmd = cl->lastUsercmd;
-// cmd.serverTime = svsHeader->time;
-// cmd.buttons = 1024;
-
-// cl->header.deltaMessage = cl->header.netchan.outgoingSequence - 1;
-
-// cl->header.deltaMessage = cl->header.netchan.outgoingSequence - 1;
-
-// usercmd_s cmd = { 0 };
-// cmd.serverTime = svsHeader->time;
-// cmd.buttons = 1024;
-// cmd.angles = cl->lastUsercmd->angles;
-// cmd.weapon = cl->lastUsercmd->weapon;
-// cmd.offHandIndex = cl->lastUsercmd->offHandIndex;
-// cmd.forwardmove = cl->lastUsercmd->forwardmove;
-// cmd.rightmove = cl->lastUsercmd->rightmove;
-// cmd.meleeChargeYaw = cl->lastUsercmd->meleeChargeYaw;
-// cmd.meleeChargeDist = cl->lastUsercmd->meleeChargeDist;
-// cmd.selectedLocation = cl->lastUsercmd->selectedLocation;
-
-// usercmd_s cmd = cl->lastUsercmd;
-// cmd.buttons = 1024;               // New buttons value
-// cmd.serverTime = svsHeader->time; // New server time value
-
-// printUserCmd(&cl->lastUsercmd);
-// std::cout << std::endl;
-
-// long *deltaMessage = (long *)((char *)cl + 0x08);
-// long *outgoingSequence = (long *)((char *)cl + 0x10);
-
-// *deltaMessage = *outgoingSequence - 1;
-
-// // client -> deltaMessage = 00000008
-// // client->netchan.outgoingSequence = 00000010
-// // client->deltaMessage = client->netchan.outgoingSequence - 1;
-
-// SV_ClientThink(cl, &cmd);
-
-// noop to prevent bots random movement
-// pSV_BotUserMoveDetour->GetOriginal<decltype(&SV_BotUserMoveHook)>()(cl);
 
 // Sets up the hook
 void InitIW3()
