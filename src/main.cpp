@@ -757,11 +757,202 @@ static_assert(sizeof(gclient_s) == 12724, "Size of gclient_s must be 12724.");
 static_assert(offsetof(gclient_s, sess) + offsetof(clientSession_t, cmd) == 12180, "sess.cmd is not at offset 12180");
 static_assert(offsetof(gclient_s, sess) + offsetof(clientSession_t, archiveTime) == 12152, "sess.cmd is not at offset 12152");
 
+struct LerpEntityStatePhysicsJitter
+{
+    float innerRadius;
+    float minDisplacement;
+    float maxDisplacement;
+};
+
+struct LerpEntityStatePlayer
+{
+    float leanf;
+    int movementDir;
+};
+
+struct LerpEntityStateLoopFx
+{
+    float cullDist;
+    int period;
+};
+
+struct LerpEntityStateCustomExplode
+{
+    int startTime;
+};
+
+struct LerpEntityStateTurret
+{
+    float gunAngles[3];
+};
+
+struct LerpEntityStateAnonymous
+{
+    int data[7];
+};
+
+struct LerpEntityStateExplosion
+{
+    float innerRadius;
+    float magnitude;
+};
+
+struct LerpEntityStateBulletHit
+{
+    float start[3];
+};
+
+struct LerpEntityStatePrimaryLight
+{
+    byte colorAndExp[4];
+    float intensity;
+    float radius;
+    float cosHalfFovOuter;
+    float cosHalfFovInner;
+};
+
+struct LerpEntityStateMissile
+{
+    int launchTime;
+};
+
+struct LerpEntityStateSoundBlend
+{
+    float lerp;
+};
+
+struct LerpEntityStateExplosionJolt
+{
+    float innerRadius;
+    float impulse[3];
+};
+
+struct LerpEntityStateVehicle
+{
+    float bodyPitch;
+    float bodyRoll;
+    float steerYaw;
+    int materialTime;
+    float gunPitch;
+    float gunYaw;
+    int team;
+};
+
+struct LerpEntityStateEarthquake
+{
+    float scale;
+    float radius;
+    int duration;
+};
+
+/* 678 */
+enum trType_t : __int32
+{
+    TR_STATIONARY = 0x0,
+    TR_INTERPOLATE = 0x1,
+    TR_LINEAR = 0x2,
+    TR_LINEAR_STOP = 0x3,
+    TR_SINE = 0x4,
+    TR_GRAVITY = 0x5,
+    TR_ACCELERATE = 0x6,
+    TR_DECELERATE = 0x7,
+    TR_PHYSICS = 0x8,
+    TR_FIRST_RAGDOLL = 0x9,
+    TR_RAGDOLL = 0x9,
+    TR_RAGDOLL_GRAVITY = 0xA,
+    TR_RAGDOLL_INTERPOLATE = 0xB,
+    TR_LAST_RAGDOLL = 0xB,
+};
+
+/* 8750 */
+struct trajectory_t
+{
+    trType_t trType;
+    int trTime;
+    int trDuration;
+    float trBase[3];
+    float trDelta[3];
+};
+
+/* 8743 */
+union LerpEntityStateTypeUnion {
+    LerpEntityStateTurret turret;
+    LerpEntityStateLoopFx loopFx;
+    LerpEntityStatePrimaryLight primaryLight;
+    LerpEntityStatePlayer player;
+    LerpEntityStateVehicle vehicle;
+    LerpEntityStateMissile missile;
+    LerpEntityStateSoundBlend soundBlend;
+    LerpEntityStateBulletHit bulletHit;
+    LerpEntityStateEarthquake earthquake;
+    LerpEntityStateCustomExplode customExplode;
+    LerpEntityStateExplosion explosion;
+    LerpEntityStateExplosionJolt explosionJolt;
+    LerpEntityStatePhysicsJitter physicsJitter;
+    LerpEntityStateAnonymous anonymous;
+};
+
+/* 8751 */
+struct LerpEntityState
+{
+    int eFlags;
+    trajectory_t pos;
+    trajectory_t apos;
+    LerpEntityStateTypeUnion u;
+};
+
+struct entityState_s
+{
+    int number; // entity index	//0x00
+    int eType;  // entityType_t	//0x04
+
+    LerpEntityState lerp;
+
+    int time2; // 0x70
+
+    int otherEntityNum;    // 0x74 shotgun sources, etc
+    int attackerEntityNum; // 0x78
+
+    int groundEntityNum; // 0x7c -1 = in air
+
+    int loopSound; // 0x80 constantly loop this sound
+    int surfType;  // 0x84
+
+    int index;         // 0x88
+    int clientNum;     // 0x8c 0 to (MAX_CLIENTS - 1), for players and corpses
+    int iHeadIcon;     // 0x90
+    int iHeadIconTeam; // 0x94
+
+    int solid; // 0x98 for client side prediction, trap_linkentity sets this properly	0x98
+
+    int eventParm;     // 0x9c impulse events -- muzzle flashes, footsteps, etc
+    int eventSequence; // 0xa0
+
+    int events[4];     // 0xa4
+    int eventParms[4]; // 0xb4
+
+    // for players
+    int weapon;      // 0xc4 determines weapon and flash model, etc
+    int weaponModel; // 0xc8
+    int legsAnim;    // 0xcc mask off ANIM_TOGGLEBIT
+    int torsoAnim;   // 0xd0 mask off ANIM_TOGGLEBIT
+
+    union {
+        int helicopterStage; // 0xd4
+    } un1;
+
+    int un2;                  // 0xd8
+    int fTorsoPitch;          // 0xdc
+    int fWaistPitch;          // 0xe0
+    unsigned int partBits[4]; // 0xe4
+};
+
+static_assert(sizeof(entityState_s) == 0xf4, "");
+static_assert(offsetof(entityState_s, index) == 0x88, "");
+
 struct gentity_s
 {
-    // entityState_s s;
-    // entityShared_t r;
-    char _pad[0x00F4]; // 0x0000, 0x00F4
+    entityState_s s;   // 0x0000, 0x00F4
     entityShared_t r;  // 0x00F4, 0x0068
     gclient_s *client; // 0x015c, 0x0004
 };
@@ -904,10 +1095,6 @@ struct level_locals_t
     gentity_s *lastFreeEnt;
 };
 
-struct entityState_s
-{
-    int index;
-};
 struct clientState_s;
 struct svEntity_s;
 struct archivedEntity_s;
@@ -1158,28 +1345,16 @@ void GScr_CloneBrushModelToScriptModel(scr_entref_t entref)
     // if (!brushEnt->s.index)
     //     Scr_ParamError(0, "brush model entity has no collision model");
 
-    // // Let's do this...
-    // SV_UnlinkEntity(scriptEnt);
-    // scriptEnt->s.index = brushEnt->s.index;
-    // int contents = scriptEnt->r.contents;
-    // SV_SetBrushModel(scriptEnt);
-    // scriptEnt->r.contents |= contents;
-    // SV_LinkEntity(scriptEnt);
-
     gentity_s *scriptEnt = GetEntity(entref);
     gentity_s *brushEnt = Scr_GetEntity(0);
 
+    // mp_backlot scriptEntIndex: 8 == cube
+
     SV_UnlinkEntity(scriptEnt);
-    // *(int *)((char *)scriptEnt + 136) = *(int *)((char *)brushEnt + 136); // ->s.index // todo proper reverse this index, if this line is missing, a nice big brush is spawned
-    int brushEntIndex = *(int *)((char *)brushEnt + 136);
-    std::cout << "brushEntIndex: " << brushEntIndex << std::endl;
-
-    int scriptEnt = *(int *)((char *)scriptEnt + 136);
-    std::cout << "scriptEnt: " << scriptEnt << std::endl;
-
-    int contents = *(int *)((char *)scriptEnt + 288); // r.contents
+    scriptEnt->s.index = brushEnt->s.index;
+    int contents = scriptEnt->r.contents;
     SV_SetBrushModel(scriptEnt);
-    *(int *)((char *)scriptEnt + 288) |= contents;
+    scriptEnt->r.contents |= contents;
     SV_LinkEntity(scriptEnt);
 }
 
