@@ -1414,14 +1414,6 @@ void ClientCommandHook(int clientNum)
         pClientCommandDetour->GetOriginal<decltype(&ClientCommandHook)>()(clientNum);
 }
 
-Detour *pSV_BotUserMoveDetour = nullptr;
-
-void SV_BotUserMoveHook(client_t *cl)
-{
-    // noop
-    // pSV_BotUserMoveDetour->GetOriginal<decltype(&SV_BotUserMoveHook)>()(cl);
-}
-
 // Sets up the hook
 void InitIW3()
 {
@@ -1434,9 +1426,6 @@ void InitIW3()
 
     pClientCommandDetour = new Detour(0x8227DCF0, ClientCommandHook);
     pClientCommandDetour->Install();
-
-    pSV_BotUserMoveDetour = new Detour(0x822009A8, SV_BotUserMoveHook);
-    pSV_BotUserMoveDetour->Install();
 
     Cmd_AddCommand("noclip");
     Cmd_AddCommand("ufo");
@@ -1458,9 +1447,6 @@ int DllMain(HANDLE hModule, DWORD reason, void *pReserved)
 
         if (pClientCommandDetour)
             delete pClientCommandDetour;
-
-        if (pSV_BotUserMoveDetour)
-            delete pSV_BotUserMoveDetour;
 
         // We give the system some time to clean up the thread before exiting
         Sleep(250);
