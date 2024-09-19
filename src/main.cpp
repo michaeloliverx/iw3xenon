@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstddef>
 #include <cassert>
+#include <cstring>
 
 // Get the address of a function from a module by its ordinal
 void *ResolveFunction(const std::string &moduleName, uint32_t ordinal)
@@ -1167,6 +1168,9 @@ int (*SV_SetBrushModel)(gentity_s *ent) = reinterpret_cast<int (*)(gentity_s *)>
 void (*SV_LinkEntity)(gentity_s *ent) = reinterpret_cast<void (*)(gentity_s *)>(0x82355A00);
 void (*G_FreeEntity)(gentity_s *ent) = reinterpret_cast<void (*)(gentity_s *)>(0x8224BDD0);
 
+int (*G_ModelIndex)(const char *name) = reinterpret_cast<int (*)(const char *name)>(0x8224CD68);
+void (*G_SetModel)(gentity_s *ent, const char *modelName) = reinterpret_cast<void (*)(gentity_s *ent, const char *modelName)>(0x8224D030);
+
 void (*CG_GameMessage)(int localClientNum, const char *msg) = reinterpret_cast<void (*)(int localClientNum, const char *msg)>(0x8230AAF0);
 void (*SV_ExecuteClientCommand)(client_t *cl, const char *s, int clientOK) = reinterpret_cast<void (*)(client_t *cl, const char *s, int clientOK)>(0x82208088);
 void (*SV_GameSendServerCommand)(int clientNum, svscmd_type type, const char *text) = reinterpret_cast<void (*)(int clientNum, svscmd_type type, const char *text)>(0x82204BB8);
@@ -1260,15 +1264,11 @@ void Cmd_UFO_f(gentity_s *ent)
         SV_GameSendServerCommand(clientNum, SV_CMD_CAN_IGNORE, "e \"GAME_UFOON\"");
 }
 
+bool BOT_JUMP = false;
+
 void GScr_testfunction(scr_entref_t entref)
 {
-    // client_t *cl = GetClientAtIndex(entref.entnum);
-    // std::cout << "scr_entref_t address: " << entref << std::endl;
-    // gentity_s *gent = GetEntity(entref);
-
-    std::cout << "Size of playerState_s: " << sizeof(playerState_s) << " bytes" << std::endl;
-    std::cout << "Size of clientSession_t: " << sizeof(clientSession_t) << " bytes" << std::endl;
-    std::cout << "Size of client_t: " << sizeof(client_t) << " bytes" << std::endl;
+    BOT_JUMP = true;
 }
 
 void PlayerCmd_JumpButtonPressed(scr_entref_t entref)
@@ -1414,6 +1414,34 @@ void ClientCommandHook(int clientNum)
         pClientCommandDetour->GetOriginal<decltype(&ClientCommandHook)>()(clientNum);
 }
 
+Detour *pG_SetModelDetour = nullptr;
+
+void G_SetModelHook(gentity_s *ent, const char *modelName)
+{
+    std::cout << "G_SetModelHook(" << ent << ", " << modelName << std::endl;
+    return pG_SetModelDetour->GetOriginal<decltype(&G_SetModelHook)>()(ent, modelName);
+}
+
+Detour *pSV_ClientThinkDetour = nullptr;
+
+void SV_ClientThinkHook(client_t *cl, usercmd_s *cmd)
+{
+    if (I_strnicmp(cl->name, "bot", 3) == 0)
+    {
+        cmd->forwardmove = 0;
+        cmd->rightmove = 0;
+        cmd->buttons = 0;
+
+        if (BOT_JUMP)
+        {
+            cmd->buttons = KEY_MASK_JUMP;
+            BOT_JUMP = false;
+        }
+    }
+
+    return pSV_ClientThinkDetour->GetOriginal<decltype(&SV_ClientThinkHook)>()(cl, cmd);
+}
+
 // Sets up the hook
 void InitIW3()
 {
@@ -1426,6 +1454,12 @@ void InitIW3()
 
     pClientCommandDetour = new Detour(0x8227DCF0, ClientCommandHook);
     pClientCommandDetour->Install();
+
+    // pG_SetModelDetour = new Detour(0x8224D030, G_SetModelHook);
+    // pG_SetModelDetour->Install();
+
+    pSV_ClientThinkDetour = new Detour(0x82208448, SV_ClientThinkHook);
+    pSV_ClientThinkDetour->Install();
 
     Cmd_AddCommand("noclip");
     Cmd_AddCommand("ufo");
@@ -1447,6 +1481,9 @@ int DllMain(HANDLE hModule, DWORD reason, void *pReserved)
 
         if (pClientCommandDetour)
             delete pClientCommandDetour;
+
+        if (pSV_ClientThinkDetour)
+            delete pSV_ClientThinkDetour;
 
         // We give the system some time to clean up the thread before exiting
         Sleep(250);
