@@ -1159,6 +1159,374 @@ struct cmd_function_s
     void(__cdecl *function)();
 };
 
+/* 9125 */
+struct scr_const_t
+{
+    unsigned __int16 _;
+    unsigned __int16 active;
+    unsigned __int16 aim_bone;
+    unsigned __int16 aim_highest_bone;
+    unsigned __int16 aim_vis_bone;
+    unsigned __int16 all;
+    unsigned __int16 allies;
+    unsigned __int16 axis;
+    unsigned __int16 bad_path;
+    unsigned __int16 begin_firing;
+    unsigned __int16 cancel_location;
+    unsigned __int16 confirm_location;
+    unsigned __int16 crouch;
+    unsigned __int16 current;
+    unsigned __int16 damage;
+    unsigned __int16 dead;
+    unsigned __int16 death;
+    unsigned __int16 detonate;
+    unsigned __int16 direct;
+    unsigned __int16 dlight;
+    unsigned __int16 done;
+    unsigned __int16 empty;
+    unsigned __int16 end_firing;
+    unsigned __int16 entity;
+    unsigned __int16 explode;
+    unsigned __int16 failed;
+    unsigned __int16 free;
+    unsigned __int16 fraction;
+    unsigned __int16 goal;
+    unsigned __int16 goal_changed;
+    unsigned __int16 goal_yaw;
+    unsigned __int16 grenade;
+    unsigned __int16 grenadedanger;
+    unsigned __int16 grenade_fire;
+    unsigned __int16 grenade_pullback;
+    unsigned __int16 info_notnull;
+    unsigned __int16 invisible;
+    unsigned __int16 key1;
+    unsigned __int16 key2;
+    unsigned __int16 killanimscript;
+    unsigned __int16 left;
+    unsigned __int16 light;
+    unsigned __int16 movedone;
+    unsigned __int16 noclass;
+    unsigned __int16 none;
+    unsigned __int16 normal;
+    unsigned __int16 player;
+    unsigned __int16 position;
+    unsigned __int16 projectile_impact;
+    unsigned __int16 prone;
+    unsigned __int16 right;
+    unsigned __int16 reload;
+    unsigned __int16 reload_start;
+    unsigned __int16 rocket;
+    unsigned __int16 rotatedone;
+    unsigned __int16 script_brushmodel;
+    unsigned __int16 script_model;
+    unsigned __int16 script_origin;
+    unsigned __int16 snd_enveffectsprio_level;
+    unsigned __int16 snd_enveffectsprio_shellshock;
+    unsigned __int16 snd_channelvolprio_holdbreath;
+    unsigned __int16 snd_channelvolprio_pain;
+    unsigned __int16 snd_channelvolprio_shellshock;
+    unsigned __int16 stand;
+    unsigned __int16 suppression;
+    unsigned __int16 suppression_end;
+    unsigned __int16 surfacetype;
+    unsigned __int16 tag_aim;
+    unsigned __int16 tag_aim_animated;
+    unsigned __int16 tag_brass;
+    unsigned __int16 tag_butt;
+    unsigned __int16 tag_clip;
+    unsigned __int16 tag_flash;
+    unsigned __int16 tag_flash_11;
+    unsigned __int16 tag_flash_2;
+    unsigned __int16 tag_flash_22;
+    unsigned __int16 tag_flash_3;
+    unsigned __int16 tag_fx;
+    unsigned __int16 tag_inhand;
+    unsigned __int16 tag_knife_attach;
+    unsigned __int16 tag_knife_fx;
+    unsigned __int16 tag_laser;
+    unsigned __int16 tag_origin;
+    unsigned __int16 tag_weapon;
+    unsigned __int16 tag_player;
+    unsigned __int16 tag_camera;
+    unsigned __int16 tag_weapon_right;
+    unsigned __int16 tag_gasmask;
+    unsigned __int16 tag_gasmask2;
+    unsigned __int16 tag_sync;
+    unsigned __int16 target_script_trigger;
+    unsigned __int16 tempEntity;
+    unsigned __int16 top;
+    unsigned __int16 touch;
+    unsigned __int16 trigger;
+    unsigned __int16 trigger_use;
+    unsigned __int16 trigger_use_touch;
+    unsigned __int16 trigger_damage;
+    unsigned __int16 trigger_lookat;
+    unsigned __int16 truck_cam;
+    unsigned __int16 weapon_change;
+    unsigned __int16 weapon_fired;
+    unsigned __int16 worldspawn;
+    unsigned __int16 flashbang;
+    unsigned __int16 flash;
+    unsigned __int16 smoke;
+    unsigned __int16 night_vision_on;
+    unsigned __int16 night_vision_off;
+    unsigned __int16 mod_unknown;
+    unsigned __int16 mod_pistol_bullet;
+    unsigned __int16 mod_rifle_bullet;
+    unsigned __int16 mod_grenade;
+    unsigned __int16 mod_grenade_splash;
+    unsigned __int16 mod_projectile;
+    unsigned __int16 mod_projectile_splash;
+    unsigned __int16 mod_melee;
+    unsigned __int16 mod_head_shot;
+    unsigned __int16 mod_crush;
+    unsigned __int16 mod_telefrag;
+    unsigned __int16 mod_falling;
+    unsigned __int16 mod_suicide;
+    unsigned __int16 mod_trigger_hurt;
+    unsigned __int16 mod_explosive;
+    unsigned __int16 mod_impact;
+    unsigned __int16 script_vehicle;
+    unsigned __int16 script_vehicle_collision;
+    unsigned __int16 script_vehicle_collmap;
+    unsigned __int16 script_vehicle_corpse;
+    unsigned __int16 turret_fire;
+    unsigned __int16 turret_on_target;
+    unsigned __int16 turret_not_on_target;
+    unsigned __int16 turret_on_vistarget;
+    unsigned __int16 turret_no_vis;
+    unsigned __int16 turret_rotate_stopped;
+    unsigned __int16 turret_deactivate;
+    unsigned __int16 turretstatechange;
+    unsigned __int16 turretownerchange;
+    unsigned __int16 reached_end_node;
+    unsigned __int16 reached_wait_node;
+    unsigned __int16 reached_wait_speed;
+    unsigned __int16 near_goal;
+    unsigned __int16 veh_collision;
+    unsigned __int16 veh_predictedcollision;
+    unsigned __int16 auto_change;
+    unsigned __int16 back_low;
+    unsigned __int16 back_mid;
+    unsigned __int16 back_up;
+    unsigned __int16 begin;
+    unsigned __int16 call_vote;
+    unsigned __int16 freelook;
+    unsigned __int16 head;
+    unsigned __int16 intermission;
+    unsigned __int16 j_head;
+    unsigned __int16 manual_change;
+    unsigned __int16 menuresponse;
+    unsigned __int16 neck;
+    unsigned __int16 pelvis;
+    unsigned __int16 pistol;
+    unsigned __int16 plane_waypoint;
+    unsigned __int16 playing;
+    unsigned __int16 spectator;
+    unsigned __int16 vote;
+    unsigned __int16 sprint_begin;
+    unsigned __int16 sprint_end;
+    unsigned __int16 host_sucks_end_game;
+    unsigned __int16 tag_driver;
+    unsigned __int16 tag_passenger;
+    unsigned __int16 tag_gunner;
+    unsigned __int16 tag_wheel_front_left;
+    unsigned __int16 tag_wheel_front_right;
+    unsigned __int16 tag_wheel_back_left;
+    unsigned __int16 tag_wheel_back_right;
+    unsigned __int16 tag_wheel_middle_left;
+    unsigned __int16 tag_wheel_middle_right;
+    unsigned __int16 tag_detach;
+    unsigned __int16 tag_popout;
+    unsigned __int16 tag_body;
+    unsigned __int16 tag_turret;
+    unsigned __int16 tag_turret_base;
+    unsigned __int16 tag_barrel;
+    unsigned __int16 tag_engine_left;
+    unsigned __int16 tag_engine_right;
+    unsigned __int16 front_left;
+    unsigned __int16 front_right;
+    unsigned __int16 back_left;
+    unsigned __int16 back_right;
+    unsigned __int16 tag_gunner_pov;
+};
+
+/* 9829 */
+struct __declspec(align(4)) SourceBufferInfo
+{
+    const char *codePos;
+    char *buf;
+    const char *sourceBuf;
+    int len;
+    int sortedIndex;
+    bool archive;
+};
+
+/* 9830 */
+struct scrParserPub_t
+{
+    SourceBufferInfo *sourceBufferLookup;
+    unsigned int sourceBufferLookupLen;
+    const char *scriptfilename;
+    const char *sourceBuf;
+};
+
+static_assert(sizeof(scrParserPub_t) == 0x10, "");
+
+/* 9024 */
+struct RawFile
+{
+    const char *name;
+    int len;
+    const char *buffer;
+};
+
+typedef unsigned int sval_u;
+
+/* 10033 */
+struct yy_buffer_state
+{
+    _iobuf *yy_input_file;
+    char *yy_ch_buf;
+    char *yy_buf_pos;
+    unsigned int yy_buf_size;
+    int yy_n_chars;
+    int yy_is_our_buffer;
+    int yy_is_interactive;
+    int yy_at_bol;
+    int yy_fill_buffer;
+    int yy_buffer_status;
+};
+
+/* 677 */
+enum XAssetType : __int32
+{
+    ASSET_TYPE_XMODELPIECES = 0x0,
+    ASSET_TYPE_PHYSPRESET = 0x1,
+    ASSET_TYPE_XANIMPARTS = 0x2,
+    ASSET_TYPE_XMODEL = 0x3,
+    ASSET_TYPE_MATERIAL = 0x4,
+    ASSET_TYPE_PIXELSHADER = 0x5,
+    ASSET_TYPE_TECHNIQUE_SET = 0x6,
+    ASSET_TYPE_IMAGE = 0x7,
+    ASSET_TYPE_SOUND = 0x8,
+    ASSET_TYPE_SOUND_CURVE = 0x9,
+    ASSET_TYPE_LOADED_SOUND = 0xA,
+    ASSET_TYPE_CLIPMAP = 0xB,
+    ASSET_TYPE_CLIPMAP_PVS = 0xC,
+    ASSET_TYPE_COMWORLD = 0xD,
+    ASSET_TYPE_GAMEWORLD_SP = 0xE,
+    ASSET_TYPE_GAMEWORLD_MP = 0xF,
+    ASSET_TYPE_MAP_ENTS = 0x10,
+    ASSET_TYPE_GFXWORLD = 0x11,
+    ASSET_TYPE_LIGHT_DEF = 0x12,
+    ASSET_TYPE_UI_MAP = 0x13,
+    ASSET_TYPE_FONT = 0x14,
+    ASSET_TYPE_MENULIST = 0x15,
+    ASSET_TYPE_MENU = 0x16,
+    ASSET_TYPE_LOCALIZE_ENTRY = 0x17,
+    ASSET_TYPE_WEAPON = 0x18,
+    ASSET_TYPE_SNDDRIVER_GLOBALS = 0x19,
+    ASSET_TYPE_FX = 0x1A,
+    ASSET_TYPE_IMPACT_FX = 0x1B,
+    ASSET_TYPE_AITYPE = 0x1C,
+    ASSET_TYPE_MPTYPE = 0x1D,
+    ASSET_TYPE_CHARACTER = 0x1E,
+    ASSET_TYPE_XMODELALIAS = 0x1F,
+    ASSET_TYPE_RAWFILE = 0x20,
+    ASSET_TYPE_STRINGTABLE = 0x21,
+    ASSET_TYPE_COUNT = 0x22,
+    ASSET_TYPE_STRING = 0x22,
+    ASSET_TYPE_ASSETLIST = 0x23,
+};
+
+struct XModelPieces;
+struct PhysPreset;
+struct XAnimParts;
+struct XModel;
+struct Material;
+struct MaterialPixelShader;
+struct MaterialVertexShader;
+struct MaterialTechniqueSet;
+struct GfxImage;
+struct snd_alias_list_t;
+struct SndCurve;
+struct LoadedSound;
+struct clipMap_t;
+struct ComWorld;
+struct GameWorldSp;
+struct GameWorldMp;
+struct MapEnts;
+struct GfxWorld;
+struct GfxLightDef;
+struct Font_s;
+struct MenuList;
+struct menuDef_t;
+struct LocalizeEntry;
+struct WeaponDef;
+struct SndDriverGlobals;
+struct FxEffectDef;
+struct FxImpactTable;
+struct StringTable;
+
+/* 9025 */
+union XAssetHeader {
+    XModelPieces *xmodelPieces;
+    PhysPreset *physPreset;
+    XAnimParts *parts;
+    XModel *model;
+    Material *material;
+    MaterialPixelShader *pixelShader;
+    MaterialVertexShader *vertexShader;
+    MaterialTechniqueSet *techniqueSet;
+    GfxImage *image;
+    snd_alias_list_t *sound;
+    SndCurve *sndCurve;
+    LoadedSound *loadSnd;
+    clipMap_t *clipMap;
+    ComWorld *comWorld;
+    GameWorldSp *gameWorldSp;
+    GameWorldMp *gameWorldMp;
+    MapEnts *mapEnts;
+    GfxWorld *gfxWorld;
+    GfxLightDef *lightDef;
+    Font_s *font;
+    MenuList *menuList;
+    menuDef_t *menu;
+    LocalizeEntry *localize;
+    WeaponDef *weapon;
+    SndDriverGlobals *sndDriverGlobals;
+    FxEffectDef *fx;
+    FxImpactTable *impactFx;
+    RawFile *rawfile;
+    StringTable *stringTable;
+    void *data;
+};
+
+/* 9575 */
+struct XAsset
+{
+    XAssetType type;
+    XAssetHeader header;
+};
+
+/* 9678 */
+struct XAssetEntry
+{
+    XAsset asset;
+    unsigned __int8 zoneIndex;
+    bool inuse;
+    unsigned __int16 nextHash;
+    unsigned __int16 nextOverride;
+    unsigned __int16 usageFrame;
+};
+
+/* 9683 */
+union XAssetEntryPoolEntry {
+    XAssetEntry entry;
+    XAssetEntryPoolEntry *next;
+};
+
 gentity_s *(*Scr_GetEntity)(scr_entref_t *entref) = reinterpret_cast<gentity_s *(*)(scr_entref_t *)>(0x8224EE68);
 void (*ScrCmd_Delete)(scr_entref_t entref) = reinterpret_cast<void (*)(scr_entref_t entref)>(0x822637A8);
 gentity_s *(*GetEntity)(scr_entref_t entref) = reinterpret_cast<gentity_s *(*)(scr_entref_t entref)>(0x82257F30);
@@ -1179,256 +1547,40 @@ int (*I_strnicmp)(const char *s0, const char *s1, int n) = reinterpret_cast<int 
 void (*Scr_AddBool)(int value) = reinterpret_cast<void (*)(int value)>(0x82211238);
 void (*SV_ClientThink)(client_t *cl, usercmd_s *cmd) = reinterpret_cast<void (*)(client_t *cl, usercmd_s *cmd)>(0x82208448);
 
+void (*Load_XAssetHeader)() = reinterpret_cast<void (*)()>(0x822B1838);
+void (*Load_RawFilePtr)() = reinterpret_cast<void (*)()>(0x822A9068);
+void (*Load_RawFile)() = reinterpret_cast<void (*)()>(0x822A77E0);
+void (*ScriptParse)(sval_u *parseData) = reinterpret_cast<void (*)(sval_u *parseData)>(0x8220F2C0);
+XAssetEntryPoolEntry *(*DB_LinkXAssetEntry)(XAssetEntry *newEntry, int allowOverride) = reinterpret_cast<XAssetEntryPoolEntry *(*)(XAssetEntry *newEntry, int allowOverride)>(0x8229FC50);
+
+RawFile *varRawFile = reinterpret_cast<RawFile *>(0x82475810);
 cmd_function_s *cmd_functions = reinterpret_cast<cmd_function_s *>(0x82A2335C);
 gentity_s *g_entities = reinterpret_cast<gentity_s *>(0x8287CD08);
 serverStaticHeader_t *svsHeader = reinterpret_cast<serverStaticHeader_t *>(0x849F1580);
 level_locals_t *level = reinterpret_cast<level_locals_t *>(0x82A07650);
+scr_const_t *scr_const = reinterpret_cast<scr_const_t *>(0x82A22F18);
+scrParserPub_t *scrParserPub = reinterpret_cast<scrParserPub_t *>(0x82BA6DD0);
+yy_buffer_state *yy_current_buffer = reinterpret_cast<yy_buffer_state *>(0x85027524);
 
-client_t *GetClientAtIndex(int index)
+Detour *pDB_LinkXAssetEntry_Detour = nullptr;
+
+XAssetEntryPoolEntry *DB_LinkXAssetEntry_Hook(XAssetEntry *newEntry, int allowOverride)
 {
-    size_t clientSize = 666760;
-    client_t *baseClient = svsHeader->clients;
-    client_t *clientAtIndex = (client_t *)((unsigned char *)baseClient + (index * clientSize));
-    return clientAtIndex;
-}
-
-gclient_s *GetGclientAtIndex(int index)
-{
-    size_t clientSize = 12724;
-    gclient_s *baseClient = level->clients;
-    gclient_s *clientAtIndex = (gclient_s *)((unsigned char *)baseClient + (index * clientSize));
-    return clientAtIndex;
-}
-
-void GScr_ExecuteClientCommand(scr_entref_t entref)
-{
-    gentity_s *ent = GetEntity(entref);
-
-    // todo: find address for Scr_GetNumParam
-    // if (Scr_GetNumParam() != 1)
-    // {
-    //     Scr_ObjectError("Usage: SendCommand( string )");
-    //     return;
-    // }
-
-    char *cmd = Scr_GetString(0);
-
-    // CG_GameMessage(0, cmd);
-
-    // TODO: this works but it needs special formatting for a client command?
-    // SV_ExecuteClientCommand(reinterpret_cast<client_t*>(0xB112AD68), cmd, 1);
-    int clientNum = ent - g_entities;
-    Cbuf_AddText(clientNum, cmd);
-}
-
-void Cmd_AddCommand(const char *name)
-{
-    cmd_function_s *cmd = new cmd_function_s;
-    cmd->name = name;
-    cmd->autoCompleteDir = nullptr;
-    cmd->autoCompleteExt = nullptr;
-    cmd->function = 0;   // Handled in ClientCommandHook since we need to pass gentity_s
-    cmd->next = nullptr; // Since it's the last item, next should be null
-
-    // Traverse the list to find the last element
-    cmd_function_s *current = cmd_functions;
-    while (current->next != nullptr)
-        current = current->next;
-
-    current->next = cmd;
-}
-
-void Cmd_Noclip_f(gentity_s *ent)
-{
-    int current = ent->client->noclip;
-    ent->client->noclip = current == 0;
-    int clientNum = ent - g_entities;
-    if (current)
-        SV_GameSendServerCommand(clientNum, SV_CMD_CAN_IGNORE, "e \"GAME_NOCLIPOFF\"");
-    else
-        SV_GameSendServerCommand(clientNum, SV_CMD_CAN_IGNORE, "e \"GAME_NOCLIPON\"");
-}
-
-void Cmd_UFO_f(gentity_s *ent)
-{
-    int current = ent->client->ufo;
-    ent->client->ufo = current == 0;
-    int clientNum = ent - g_entities;
-    if (current)
-        SV_GameSendServerCommand(clientNum, SV_CMD_CAN_IGNORE, "e \"GAME_UFOOFF\"");
-    else
-        SV_GameSendServerCommand(clientNum, SV_CMD_CAN_IGNORE, "e \"GAME_UFOON\"");
-}
-
-void GScr_testfunction(scr_entref_t entref)
-{
-    // client_t *cl = GetClientAtIndex(entref.entnum);
-    // std::cout << "scr_entref_t address: " << entref << std::endl;
-    // gentity_s *gent = GetEntity(entref);
-
-    std::cout << "Size of playerState_s: " << sizeof(playerState_s) << " bytes" << std::endl;
-    std::cout << "Size of clientSession_t: " << sizeof(clientSession_t) << " bytes" << std::endl;
-    std::cout << "Size of client_t: " << sizeof(client_t) << " bytes" << std::endl;
-}
-
-void PlayerCmd_JumpButtonPressed(scr_entref_t entref)
-{
-    // if (Scr_GetNumParam())
-    //     Scr_Error("Usage: <client> JumpButtonPressed()\n");
-
-    client_t *cl = GetClientAtIndex(entref.entnum);
-
-    if (!cl)
-        Scr_ObjectError("not a client\n");
-
-    Scr_AddBool(cl->lastUsercmd.buttons & KEY_MASK_JUMP);
-}
-
-void PlayerCmd_HoldBreathButtonPressed(scr_entref_t entref)
-{
-    // if (Scr_GetNumParam())
-    //     Scr_Error("Usage: <client> HoldBreathButtonPressed()\n");
-
-    client_t *cl = GetClientAtIndex(entref.entnum);
-
-    if (!cl)
-        Scr_ObjectError("not a client\n");
-
-    Scr_AddBool(cl->lastUsercmd.buttons & KEY_MASK_HOLDBREATH);
-}
-
-void PlayerCmd_LeanLeftButtonPressed(scr_entref_t entref)
-{
-    // if (Scr_GetNumParam())
-    //     Scr_Error("Usage: <client> LeanLeftButtonPressed()\n");
-
-    client_t *cl = GetClientAtIndex(entref.entnum);
-
-    if (!cl)
-        Scr_ObjectError("not a client\n");
-
-    Scr_AddBool(cl->lastUsercmd.buttons & KEY_MASK_LEANLEFT);
-}
-
-void PlayerCmd_LeanRightButtonPressed(scr_entref_t entref)
-{
-    // if (Scr_GetNumParam())
-    //     Scr_Error("Usage: <client> LeanRightButtonPressed()\n");
-
-    client_t *cl = GetClientAtIndex(entref.entnum);
-
-    if (!cl)
-        Scr_ObjectError("not a client\n");
-
-    Scr_AddBool(cl->lastUsercmd.buttons & KEY_MASK_LEANRIGHT);
-}
-
-void GScr_CloneBrushModelToScriptModel(scr_entref_t entref)
-{
-    // // Common checks.
-    // if (Scr_GetNumParam() != 1)
-    //     Scr_Error("usage: <scriptModelEnt> CloneBrushModelToScriptModel(<brushModelEnt>)");
-
-    // // Object checks.
-    // gentity_t* scriptEnt = VM_GetGEntityForNum(scriptModelEntNum);
-    // if (scriptEnt->classname != (unsigned short)scr_const.script_model)
-    //     Scr_ObjectError("passed entity is not a script_model entity");
-
-    // if (scriptEnt->s.eType != 6)
-    //     Scr_ObjectError("passed entity type is not 6 (TODO: what is it?)");
-
-    // // Arguments checks.
-    // gentity_t* brushEnt = Scr_GetEntity(0);
-    // if (brushEnt->classname != (unsigned short)scr_const.script_brushmodel && brushEnt->classname != (unsigned short)scr_const.script_model && brushEnt->classname != (unsigned short)scr_const.script_origin && brushEnt->classname != (unsigned short)scr_const.light)
-    //     Scr_ParamError(0, "brush model entity classname must be one of {script_brushmodel, script_model, script_origin, light}");
-
-    // if (!brushEnt->s.index)
-    //     Scr_ParamError(0, "brush model entity has no collision model");
-
-    gentity_s *scriptEnt = GetEntity(entref);
-    gentity_s *brushEnt = Scr_GetEntity(0);
-
-    // mp_backlot scriptEntIndex: 8 == cube
-
-    SV_UnlinkEntity(scriptEnt);
-    scriptEnt->s.index = brushEnt->s.index;
-    int contents = scriptEnt->r.contents;
-    SV_SetBrushModel(scriptEnt);
-    scriptEnt->r.contents |= contents;
-    SV_LinkEntity(scriptEnt);
-}
-
-Detour *pScr_GetMethodDetour = nullptr;
-
-xfunction_t Scr_GetMethodHook(const char **pName, int *type)
-{
-    xfunction_t ret = pScr_GetMethodDetour->GetOriginal<decltype(&Scr_GetMethodHook)>()(pName, type);
-
-    if (ret)
-        return ret;
-
-    if (std::strcmp(*pName, "executeclientcommand") == 0)
-        return &GScr_ExecuteClientCommand;
-
-    if (std::strcmp(*pName, "testfunction") == 0)
-        return &GScr_testfunction;
-
-    if (std::strcmp(*pName, "jumpbuttonpressed") == 0)
-        return &PlayerCmd_JumpButtonPressed;
-
-    if (std::strcmp(*pName, "holdbreathbuttonpressed") == 0)
-        return &PlayerCmd_HoldBreathButtonPressed;
-
-    if (std::strcmp(*pName, "leanleftbuttonpressed") == 0)
-        return &PlayerCmd_LeanLeftButtonPressed;
-
-    if (std::strcmp(*pName, "leanrightbuttonpressed") == 0)
-        return &PlayerCmd_LeanRightButtonPressed;
-
-    if (std::strcmp(*pName, "clonebrushmodeltoscriptmodel") == 0)
-        return &GScr_CloneBrushModelToScriptModel;
-
+    std::cout << "DB_LinkXAssetEntry_Hook" << std::endl;
+    XAssetEntryPoolEntry *ret = pDB_LinkXAssetEntry_Detour->GetOriginal<decltype(&DB_LinkXAssetEntry_Hook)>()(newEntry, allowOverride);
+    // std::cout << "ret.entry.asset.type: " << ret.entry.asset.type << std::endl;
     return ret;
-}
-
-Detour *pClientCommandDetour = nullptr;
-
-void ClientCommandHook(int clientNum)
-{
-    gentity_s *ent = &g_entities[clientNum];
-    // std::cout << "ClientCommandHook clientNum: " << clientNum << std::endl;
-    // std::cout << "ClientCommandHook ent: " << ent << std::endl;
-
-    char cmd[1032];
-    SV_Cmd_ArgvBuffer(0, cmd, 1024);
-
-    // std::cout << "ClientCommand: " << cmd << std::endl;
-
-    if (I_strnicmp(cmd, "noclip", 6) == 0)
-        Cmd_Noclip_f(ent);
-
-    else if (I_strnicmp(cmd, "ufo", 3) == 0)
-        Cmd_UFO_f(ent);
-
-    else
-        pClientCommandDetour->GetOriginal<decltype(&ClientCommandHook)>()(clientNum);
 }
 
 // Sets up the hook
 void InitIW3()
 {
     // Waiting a little bit for the game to be fully loaded in memory
-    Sleep(1000);
+    Sleep(10000);
     XNotifyQueueUI(0, 0, XNOTIFY_SYSTEM, L"iw3xenon loaded - by mo", nullptr);
 
-    pScr_GetMethodDetour = new Detour(0x822570E0, Scr_GetMethodHook);
-    pScr_GetMethodDetour->Install();
-
-    pClientCommandDetour = new Detour(0x8227DCF0, ClientCommandHook);
-    pClientCommandDetour->Install();
-
-    Cmd_AddCommand("noclip");
-    Cmd_AddCommand("ufo");
+    pDB_LinkXAssetEntry_Detour = new Detour(0x8229FC50, DB_LinkXAssetEntry_Hook);
+    pDB_LinkXAssetEntry_Detour->Install();
 }
 
 int DllMain(HANDLE hModule, DWORD reason, void *pReserved)
@@ -1442,11 +1594,8 @@ int DllMain(HANDLE hModule, DWORD reason, void *pReserved)
     case DLL_PROCESS_DETACH:
         g_Running = false;
 
-        if (pScr_GetMethodDetour)
-            delete pScr_GetMethodDetour;
-
-        if (pClientCommandDetour)
-            delete pClientCommandDetour;
+        if (pDB_LinkXAssetEntry_Detour)
+            delete pDB_LinkXAssetEntry_Detour;
 
         // We give the system some time to clean up the thread before exiting
         Sleep(250);
