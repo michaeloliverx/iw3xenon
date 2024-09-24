@@ -1373,14 +1373,6 @@ struct scrParserPub_t
 
 static_assert(sizeof(scrParserPub_t) == 0x10, "");
 
-/* 9024 */
-struct RawFile
-{
-    const char *name;
-    int len;
-    const char *buffer;
-};
-
 typedef unsigned int sval_u;
 
 /* 10033 */
@@ -1456,7 +1448,14 @@ struct clipMap_t;
 struct ComWorld;
 struct GameWorldSp;
 struct GameWorldMp;
-struct MapEnts;
+
+/* 8962 */
+struct MapEnts
+{
+    const char *name;
+    char *entityString;
+    int numEntityChars;
+};
 struct GfxWorld;
 struct GfxLightDef;
 struct Font_s;
@@ -1467,6 +1466,15 @@ struct WeaponDef;
 struct SndDriverGlobals;
 struct FxEffectDef;
 struct FxImpactTable;
+
+/* 9024 */
+struct RawFile
+{
+    const char *name;
+    int len;
+    const char *buffer;
+};
+
 struct StringTable;
 
 /* 9025 */
@@ -1568,7 +1576,18 @@ XAssetEntryPoolEntry *DB_LinkXAssetEntry_Hook(XAssetEntry *newEntry, int allowOv
 {
     std::cout << "DB_LinkXAssetEntry_Hook" << std::endl;
     XAssetEntryPoolEntry *ret = pDB_LinkXAssetEntry_Detour->GetOriginal<decltype(&DB_LinkXAssetEntry_Hook)>()(newEntry, allowOverride);
-    // std::cout << "ret.entry.asset.type: " << ret.entry.asset.type << std::endl;
+    std::cout << "ret.entry.asset.type: " << ret->entry.asset.type << std::endl;
+    if (ret->entry.asset.type == ASSET_TYPE_RAWFILE)
+    {
+        std::cout << "ret.entry.asset.header.rawfile->name: " << ret->entry.asset.header.rawfile->name << std::endl;
+        std::cout << "ret.entry.asset.header.rawfile->len: " << ret->entry.asset.header.rawfile->len << std::endl;
+    }
+    if (ret->entry.asset.type == ASSET_TYPE_MAP_ENTS)
+    {
+        std::cout << "ret.entry.asset.header.mapEnts->name: " << ret->entry.asset.header.mapEnts->name << std::endl;
+        std::cout << "ret.entry.asset.header.mapEnts->entityString: " << ret->entry.asset.header.mapEnts->entityString << std::endl;
+    }
+
     return ret;
 }
 
