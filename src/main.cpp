@@ -473,6 +473,15 @@ struct hudelem_s
     int flags;
 };
 
+/* 9185 */
+struct game_hudelem_s
+{
+    hudelem_s elem;
+    int clientNum;
+    int team;
+    int archived;
+};
+
 typedef struct hudElemState_t
 {
     hudelem_s current[31];
@@ -1535,6 +1544,19 @@ union XAssetEntryPoolEntry {
     XAssetEntryPoolEntry *next;
 };
 
+/* 9724 */
+union XAssetPoolEntryRawFile {
+    RawFile entry;
+    XAssetPoolEntryRawFile *next;
+};
+
+/* 9725 */
+struct XAssetPoolRawFile
+{
+    XAssetPoolEntryRawFile *freeHead;
+    XAssetPoolEntryRawFile entries[1024];
+};
+
 gentity_s *(*Scr_GetEntity)(scr_entref_t *entref) = reinterpret_cast<gentity_s *(*)(scr_entref_t *)>(0x8224EE68);
 void (*ScrCmd_Delete)(scr_entref_t entref) = reinterpret_cast<void (*)(scr_entref_t entref)>(0x822637A8);
 gentity_s *(*GetEntity)(scr_entref_t entref) = reinterpret_cast<gentity_s *(*)(scr_entref_t entref)>(0x82257F30);
@@ -1560,6 +1582,8 @@ void (*Load_RawFilePtr)() = reinterpret_cast<void (*)()>(0x822A9068);
 void (*Load_RawFile)() = reinterpret_cast<void (*)()>(0x822A77E0);
 void (*ScriptParse)(sval_u *parseData) = reinterpret_cast<void (*)(sval_u *parseData)>(0x8220F2C0);
 XAssetEntryPoolEntry *(*DB_LinkXAssetEntry)(XAssetEntry *newEntry, int allowOverride) = reinterpret_cast<XAssetEntryPoolEntry *(*)(XAssetEntry *newEntry, int allowOverride)>(0x8229FC50);
+void (*DB_GetXAsset)(XAssetType type, XAssetHeader *header) = reinterpret_cast<void (*)(XAssetType type, XAssetHeader *header)>(0x8229E838);
+void (*DB_InitPoolRawFile)(void *pool, int size) = reinterpret_cast<void (*)(void *pool, int size)>(0x8229DA4C);
 
 RawFile *varRawFile = reinterpret_cast<RawFile *>(0x82475810);
 cmd_function_s *cmd_functions = reinterpret_cast<cmd_function_s *>(0x82A2335C);
@@ -1569,37 +1593,143 @@ level_locals_t *level = reinterpret_cast<level_locals_t *>(0x82A07650);
 scr_const_t *scr_const = reinterpret_cast<scr_const_t *>(0x82A22F18);
 scrParserPub_t *scrParserPub = reinterpret_cast<scrParserPub_t *>(0x82BA6DD0);
 yy_buffer_state *yy_current_buffer = reinterpret_cast<yy_buffer_state *>(0x85027524);
+XAssetEntryPoolEntry *g_assetEntryPool = reinterpret_cast<XAssetEntryPoolEntry *>(0x82583B60);
+XAssetPoolRawFile *xassetpool_rawfile = reinterpret_cast<XAssetPoolRawFile *>(0x82708C20);
+game_hudelem_s *g_hudelems = reinterpret_cast<game_hudelem_s *>(0x8284FD00);
 
-Detour *pDB_LinkXAssetEntry_Detour = nullptr;
+// Detour *pDB_LinkXAssetEntry_Detour = nullptr;
 
-XAssetEntryPoolEntry *DB_LinkXAssetEntry_Hook(XAssetEntry *newEntry, int allowOverride)
+// XAssetEntryPoolEntry *DB_LinkXAssetEntry_Hook(XAssetEntry *newEntry, int allowOverride)
+// {
+//     std::cout << "DB_LinkXAssetEntry_Hook" << std::endl;
+//     XAssetEntryPoolEntry *ret = pDB_LinkXAssetEntry_Detour->GetOriginal<decltype(&DB_LinkXAssetEntry_Hook)>()(newEntry, allowOverride);
+//     std::cout << "ret.entry.asset.type: " << ret->entry.asset.type << std::endl;
+//     if (ret->entry.asset.type == ASSET_TYPE_RAWFILE)
+//     {
+//         std::cout << "ret.entry.asset.header.rawfile->name: " << ret->entry.asset.header.rawfile->name << std::endl;
+//         std::cout << "ret.entry.asset.header.rawfile->len: " << ret->entry.asset.header.rawfile->len << std::endl;
+//     }
+//     if (ret->entry.asset.type == ASSET_TYPE_MAP_ENTS)
+//     {
+//         std::cout << "ret.entry.asset.header.mapEnts->name: " << ret->entry.asset.header.mapEnts->name << std::endl;
+//         std::cout << "ret.entry.asset.header.mapEnts->entityString: " << ret->entry.asset.header.mapEnts->entityString << std::endl;
+//     }
+
+// return ret;
+// }
+
+// Detour *pDB_InitPool_Detour = nullptr;
+
+// void *DB_InitPool_Hook(void *pool, int size)
+// {
+//     std::cout << "DB_InitPool_Hook" << std::endl;
+//     pDB_InitPool_Detour->GetOriginal<decltype(&DB_InitPool_Hook)>()(pool, size);
+// }
+
+// Detour *pDB_InitPool_Detour = nullptr;
+
+// void *DB_InitPool_Hook(void *pool, int size)
+// {
+//     std::cout << "DB_InitPool_Hook" << std::endl;
+//     pDB_InitPool_Detour->GetOriginal<decltype(&DB_InitPool_Hook)>()(pool, size);
+// }
+
+void prettyPrintGameHudelem(game_hudelem_s *g_hudelems, int size)
 {
-    std::cout << "DB_LinkXAssetEntry_Hook" << std::endl;
-    XAssetEntryPoolEntry *ret = pDB_LinkXAssetEntry_Detour->GetOriginal<decltype(&DB_LinkXAssetEntry_Hook)>()(newEntry, allowOverride);
-    std::cout << "ret.entry.asset.type: " << ret->entry.asset.type << std::endl;
-    if (ret->entry.asset.type == ASSET_TYPE_RAWFILE)
+    for (int i = 0; i < size; ++i)
     {
-        std::cout << "ret.entry.asset.header.rawfile->name: " << ret->entry.asset.header.rawfile->name << std::endl;
-        std::cout << "ret.entry.asset.header.rawfile->len: " << ret->entry.asset.header.rawfile->len << std::endl;
-    }
-    if (ret->entry.asset.type == ASSET_TYPE_MAP_ENTS)
-    {
-        std::cout << "ret.entry.asset.header.mapEnts->name: " << ret->entry.asset.header.mapEnts->name << std::endl;
-        std::cout << "ret.entry.asset.header.mapEnts->entityString: " << ret->entry.asset.header.mapEnts->entityString << std::endl;
-    }
+        const game_hudelem_s &hudelem = g_hudelems[i];
 
-    return ret;
+        // Initial check: we assume the element is "present" if it's not HE_TYPE_FREE
+        if (hudelem.elem.type == HE_TYPE_FREE)
+            continue; // Skip this element if it's considered unused
+
+        std::cout << "game_hudelem_s[" << i << "]:\n";
+        std::cout << "  clientNum: " << hudelem.clientNum << "\n";
+        std::cout << "  team: " << hudelem.team << "\n";
+        std::cout << "  archived: " << hudelem.archived << "\n";
+
+        const hudelem_s &elem = hudelem.elem;
+
+        std::cout << "  elem.type: " << elem.type << "\n";
+        std::cout << "  elem.x: " << elem.x << "\n";
+        std::cout << "  elem.y: " << elem.y << "\n";
+        std::cout << "  elem.z: " << elem.z << "\n";
+        std::cout << "  elem.targetEntNum: " << elem.targetEntNum << "\n";
+        std::cout << "  elem.fontScale: " << elem.fontScale << "\n";
+        std::cout << "  elem.font: " << elem.font << "\n";
+        std::cout << "  elem.alignOrg: " << elem.alignOrg << "\n";
+        std::cout << "  elem.alignScreen: " << elem.alignScreen << "\n";
+        std::cout << "  elem.color (RGBA): ("
+                  << static_cast<int>(elem.color.__s0.r) << ", "
+                  << static_cast<int>(elem.color.__s0.g) << ", "
+                  << static_cast<int>(elem.color.__s0.b) << ", "
+                  << static_cast<int>(elem.color.__s0.a) << ")\n";
+        std::cout << "  elem.fromColor (RGBA): ("
+                  << static_cast<int>(elem.fromColor.__s0.r) << ", "
+                  << static_cast<int>(elem.fromColor.__s0.g) << ", "
+                  << static_cast<int>(elem.fromColor.__s0.b) << ", "
+                  << static_cast<int>(elem.fromColor.__s0.a) << ")\n";
+        std::cout << "  elem.fadeStartTime: " << elem.fadeStartTime << "\n";
+        std::cout << "  elem.fadeTime: " << elem.fadeTime << "\n";
+        std::cout << "  elem.label: " << elem.label << "\n";
+        std::cout << "  elem.width: " << elem.width << "\n";
+        std::cout << "  elem.height: " << elem.height << "\n";
+        std::cout << "  elem.materialIndex: " << elem.materialIndex << "\n";
+        std::cout << "  elem.offscreenMaterialIdx: " << elem.offscreenMaterialIdx << "\n";
+        std::cout << "  elem.fromWidth: " << elem.fromWidth << "\n";
+        std::cout << "  elem.fromHeight: " << elem.fromHeight << "\n";
+        std::cout << "  elem.scaleStartTime: " << elem.scaleStartTime << "\n";
+        std::cout << "  elem.scaleTime: " << elem.scaleTime << "\n";
+        std::cout << "  elem.fromX: " << elem.fromX << "\n";
+        std::cout << "  elem.fromY: " << elem.fromY << "\n";
+        std::cout << "  elem.fromAlignOrg: " << elem.fromAlignOrg << "\n";
+        std::cout << "  elem.fromAlignScreen: " << elem.fromAlignScreen << "\n";
+        std::cout << "  elem.moveStartTime: " << elem.moveStartTime << "\n";
+        std::cout << "  elem.moveTime: " << elem.moveTime << "\n";
+        std::cout << "  elem.time: " << elem.time << "\n";
+        std::cout << "  elem.duration: " << elem.duration << "\n";
+        std::cout << "  elem.value: " << elem.value << "\n";
+        std::cout << "  elem.text: " << elem.text << "\n";
+        std::cout << "  elem.sort: " << elem.sort << "\n";
+        std::cout << "  elem.glowColor (RGBA): ("
+                  << static_cast<int>(elem.glowColor.__s0.r) << ", "
+                  << static_cast<int>(elem.glowColor.__s0.g) << ", "
+                  << static_cast<int>(elem.glowColor.__s0.b) << ", "
+                  << static_cast<int>(elem.glowColor.__s0.a) << ")\n";
+        std::cout << "  elem.fxBirthTime: " << elem.fxBirthTime << "\n";
+        std::cout << "  elem.fxLetterTime: " << elem.fxLetterTime << "\n";
+        std::cout << "  elem.fxDecayStartTime: " << elem.fxDecayStartTime << "\n";
+        std::cout << "  elem.fxDecayDuration: " << elem.fxDecayDuration << "\n";
+        std::cout << "  elem.soundID: " << elem.soundID << "\n";
+        std::cout << "  elem.flags: " << elem.flags << "\n";
+
+        std::cout << "-------------------------------\n";
+    }
 }
 
 // Sets up the hook
 void InitIW3()
 {
     // Waiting a little bit for the game to be fully loaded in memory
+    std::cout << "iw3xenon loaded - by mo - sleeping" << std::endl;
     Sleep(10000);
-    XNotifyQueueUI(0, 0, XNOTIFY_SYSTEM, L"iw3xenon loaded - by mo", nullptr);
+    std::cout << "awake" << std::endl;
+    prettyPrintGameHudelem(g_hudelems, 100);
 
-    pDB_LinkXAssetEntry_Detour = new Detour(0x8229FC50, DB_LinkXAssetEntry_Hook);
-    pDB_LinkXAssetEntry_Detour->Install();
+    // pDB_LinkXAssetEntry_Detour = new Detour(0x8229FC50, DB_LinkXAssetEntry_Hook);
+    // pDB_LinkXAssetEntry_Detour->Install();
+
+    // pDB_InitPool_Detour = new Detour(0x8229DA4C, DB_InitPool_Hook);
+    // pDB_InitPool_Detour->Install();
+
+    // // Loop through all 1024 entries
+    // for (int i = 0; i < 1024; ++i)
+    // {
+    //     RawFile &rawFile = assetPool->entries[i].entry;
+    //     if (rawFile.name != nullptr) // Check if the name is valid (non-null)
+    //         std::cout << "Entry " << i << ": Name = " << rawFile.name << ", Length = " << rawFile.len << std::endl;
+    // }
 }
 
 int DllMain(HANDLE hModule, DWORD reason, void *pReserved)
@@ -1613,8 +1743,11 @@ int DllMain(HANDLE hModule, DWORD reason, void *pReserved)
     case DLL_PROCESS_DETACH:
         g_Running = false;
 
-        if (pDB_LinkXAssetEntry_Detour)
-            delete pDB_LinkXAssetEntry_Detour;
+        // if (pDB_LinkXAssetEntry_Detour)
+        //     delete pDB_LinkXAssetEntry_Detour;
+
+        // if (pDB_InitPool_Detour)
+        //     delete pDB_InitPool_Detour;
 
         // We give the system some time to clean up the thread before exiting
         Sleep(250);
